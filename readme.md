@@ -25,6 +25,6 @@ Oscillator.setPeriodicWave(real, imag);
 
 ## Related
 
-> [audio-generator](https://github.com/audio-lab/audio-generator) — generate audio stream with a function.
-> [audio-speaker](https://github.com/audio-lab/audio-speaker) — output audio stream to speaker in node/browser.
-> [web-audio-stream](https://github.com/audio-lab/web-audio-stream) — stream to web-audio node.
+> [audio-generator](https://github.com/audio-lab/audio-generator) — generate audio stream with a function.<br/>
+> [audio-speaker](https://github.com/audio-lab/audio-speaker) — output audio stream to speaker in node/browser.<br/>
+> [web-audio-stream](https://github.com/audio-lab/web-audio-stream) — stream to web-audio node.<br/>
