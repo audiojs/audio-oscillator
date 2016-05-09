@@ -127,18 +127,10 @@ Oscillator.prototype.process = function (buf) {
 	var count = this.count;
 	var period = this.sampleRate / (this.frequency * Math.pow(2, this.detune / 1200));
 
-	if (this.type === 'wave') {
-		var im = this.im, real = this.real, normalize = this.normalize;
-		util.fill(buf, function (x, i) {
-			return fn(((count + i) % period) / period, real, im, normalize);
-		});
-	}
-
-	else {
-		util.fill(buf, function (x, i) {
-			return fn(((count + i) % period) / period);
-		});
-	}
+	var im = this.im, real = this.real, normalize = this.normalize;
+	util.fill(buf, function (x, i) {
+		return fn(((count + i) % period) / period, real, im, normalize);
+	});
 
 	return buf;
 }
