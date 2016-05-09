@@ -2,6 +2,8 @@ Oscillate some periodic wave into stream. [OscillatorNode](http://webaudio.githu
 
 ## Usage
 
+[![$ npm install audio-oscillator](http://nodei.co/npm/audio-oscillator.png?mini=true)](http://npmjs.org/package/audio-oscillator)
+
 ```js
 var Oscillator = require('audio-oscillator');
 var Speaker = require('audio-speaker');
