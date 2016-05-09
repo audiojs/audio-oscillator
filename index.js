@@ -68,6 +68,7 @@ function (t) {
 
 Oscillator.prototype.types.square =
 Oscillator.prototype.types.rect =
+Oscillator.prototype.types.rectangle =
 function (t) {
 	if (t >= 0.5) return -1;
 	return 1;

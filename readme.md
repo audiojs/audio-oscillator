@@ -10,9 +10,16 @@ var Speaker = require('audio-speaker');
 var Slice = require('audio-slice');
 
 Oscillator({
+	//in hz
 	frequency: 440,
+
+	//in cents
 	detune: 0,
+
+	//sine, triangle, square, saw, pulse, wave
 	type: 'sine',
+
+	//normalize result of `wave` type
 	normalize: true
 })
 .pipe(Slice(1))
@@ -20,7 +27,7 @@ Oscillator({
 
 
 //Set periodic wave from arrays of real and imaginary coefficients
-Oscillator.setPeriodicWave(real, imag);
+oscillator.setPeriodicWave(real, imag);
 ```
 
 ## Related
