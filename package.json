@@ -1,0 +1,34 @@
+{
+  "name": "audio-oscillator",
+  "version": "1.0.0",
+  "description": "Oscillate periodic wave to stream",
+  "main": "index.js",
+  "dependencies": {
+    "audio-buffer-utils": "^3.1.1",
+    "audio-through": "^2.1.0"
+  },
+  "devDependencies": {
+    "audio-slice": "^1.1.0",
+    "audio-speaker": "^1.2.4",
+    "tst": "^1.3.1"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/audio-lab/audio-oscillator.git"
+  },
+  "keywords": [
+    "audio",
+    "dsp",
+    "stream",
+    "pcm"
+  ],
+  "author": "ΔY <dfcreative@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/audio-lab/audio-oscillator/issues"
+  },
+  "homepage": "https://github.com/audio-lab/audio-oscillator#readme"
+}
