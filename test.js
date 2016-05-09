@@ -53,9 +53,10 @@ test('setPeriodicWave', function () {
 	.pipe(Speaker())
 });
 
-test.only('Detune', function () {
+test('Detune', function () {
 	Oscillator({
-		type: 'saw'
+		type: 'saw',
+		detune: 50
 	})
 	.pipe(Slice(2))
 	.pipe(Speaker())

@@ -125,7 +125,7 @@ Oscillator.prototype.setPeriodicWave = function (real, im) {
 Oscillator.prototype.process = function (buf) {
 	var fn = this.types[this.type];
 	var count = this.count;
-	var period = this.sampleRate / this.frequency;
+	var period = this.sampleRate / (this.frequency * Math.pow(2, this.detune / 1200));
 
 	if (this.type === 'wave') {
 		var im = this.im, real = this.real, normalize = this.normalize;
