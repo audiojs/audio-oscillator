@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/audio-lab/audio-oscillator.git"
+    "url": "git+https://github.com/audiojs/audio-oscillator.git"
   },
   "keywords": [
     "audio",
@@ -28,7 +28,7 @@
   "author": "ΔY <dfcreative@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/audio-lab/audio-oscillator/issues"
+    "url": "https://github.com/audiojs/audio-oscillator/issues"
   },
-  "homepage": "https://github.com/audio-lab/audio-oscillator#readme"
+  "homepage": "https://github.com/audiojs/audio-oscillator#readme"
 }
