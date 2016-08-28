@@ -4,7 +4,7 @@
  *
  * @module  audio-oscillator
  */
-
+'use strict';
 
 var inherits = require('inherits');
 var Through = require('audio-through');
