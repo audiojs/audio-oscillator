@@ -8,7 +8,6 @@
 
 var inherits = require('inherits');
 var Through = require('audio-through');
-var extend = require('xtend/mutable');
 var util = require('audio-buffer-utils');
 
 
