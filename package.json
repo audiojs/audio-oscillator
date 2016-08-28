@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "audio-buffer-utils": "^3.1.1",
-    "audio-through": "^2.1.0"
+    "audio-through": "^2.1.5"
   },
   "devDependencies": {
     "audio-sink": "^1.1.2",
