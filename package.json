@@ -9,7 +9,7 @@
     "inherits": "^2.0.1"
   },
   "devDependencies": {
-    "audio-sink": "^1.1.2",
+    "audio-sink": "^1.1.3",
     "audio-slice": "^1.1.0",
     "audio-speaker": "^1.2.4",
     "tst": "^1.3.1"
