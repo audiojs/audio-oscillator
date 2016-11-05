@@ -67,7 +67,7 @@ function oscillator (options) {
    *
    * ```js
    * var oscillate = oscillator()
-   * oscillate.setWave('periodic', [0, 0], [0, 1])
+   * oscillate.setWave('periodic', [0, 1], [0, 0])
    * oscillate(function (buf, done) {
   *    speaker(buf, done)
    * })
@@ -123,6 +123,14 @@ oscillator.types = {
   	return -1;
   },
 
+  /**
+   * Periodic wave function takes real and
+   * immaginary coefficients for each channel.
+   *
+   * ```js
+   * oscillate.setWave('periodic', [0, 1], [0, 0])
+   * ```
+   */
   periodic: function periodic (t, real, im, normalize) {
   	var res = 0;
   	var pi2 = Math.PI * 2;
@@ -130,8 +138,7 @@ oscillator.types = {
   	var sum = [0,0];
 
   	for (var harmonic = 0; harmonic < N; harmonic++) {
-  		res += real[harmonic] * Math.cos(pi2 * t * harmonic) +
-               im[harmonic] * Math.sin(pi2 * t * harmonic);
+  		res += real[harmonic] * Math.cos(pi2 * t * harmonic) + im[harmonic] * Math.sin(pi2 * t * harmonic);
 
   		sum[0] += real[harmonic];
   		sum[1] += im[harmonic];
