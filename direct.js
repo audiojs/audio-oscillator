@@ -34,8 +34,7 @@ function oscillator (options) {
     });
 
     function done () {
-      if (stopped) return;
-      read(callback)
+      if (!stopped) read(callback)
     }
 
     callback(buf, done)
