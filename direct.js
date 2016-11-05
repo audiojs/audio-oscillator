@@ -5,6 +5,14 @@ var objectAssign = require('object-assign')
 
 module.exports = oscillator
 
+/**
+ * Create an oscillator that gives you AudioBuffers
+ * in a callback until you stop it.
+ *
+ * ```js
+ * oscillator({ ...options })(speaker())
+ * ```
+ */
 function oscillator (options) {
   options = objectAssign({
     frequency: 440,
@@ -15,6 +23,8 @@ function oscillator (options) {
     real: [0, 1]
   }, pcmDefaults, options)
 
+  // just redefining bunch of options as reference names
+  // little bit of math and some state things.
   var fn = oscillator.types[options.type]
   var sampleRate = options.sampleRate
   var period = sampleRate / (options.frequency * Math.pow(2, options.detune / 1200))
@@ -26,7 +36,17 @@ function oscillator (options) {
   var stopped = false
   var count = 0
 
-  // Takes a callback and lets you
+  /**
+   * Reads takes a function and keeps creating audio buffers
+   * until you decide to to use the `read.end()` function.
+   *
+   * ```sh
+   * var read = oscillator()
+   * read(function (buf, done) {
+   *   // use buf then call `done(err?)`
+   * })
+   * ```
+   */
   function read (callback) {
     var buf = new AudioBuffer(channels, size, sampleRate)
     util.fill(buf, function (x, i) {
@@ -41,6 +61,19 @@ function oscillator (options) {
     count += size
   }
 
+  /**
+   * This lets you change the wave function
+   * can be done at the same time it is oscillating.
+   *
+   * ```js
+   * var oscillate = oscillator()
+   * oscillate.setWave('periodic', [0, 0], [0, 1])
+   * oscillate(function (buf, done) {
+  *    speaker(buf, done)
+   * })
+   * setTimeout(() => oscillate.setWave('sine', 150), 1500)
+   * ```
+   */
   function setWave (type, newIm, newReal) {
     fn = oscillator.types[type]
     if (type === 'periodic' && newReal) {
@@ -51,6 +84,9 @@ function oscillator (options) {
     }
   }
 
+  /**
+   * For ending the oscillator.
+   */
   function end () {
     stopped = true
   }
@@ -60,6 +96,9 @@ function oscillator (options) {
   return read
 }
 
+/**
+ * Oscillator wave functions.
+ */
 oscillator.types = {
   sine: function sine (t) {
   	return Math.sin(Math.PI * 2 * t);
