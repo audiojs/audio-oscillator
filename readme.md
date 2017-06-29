@@ -39,19 +39,19 @@ Creatie oscillator function based on the `options`:
 
 Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature, called once per `oscillate`.
 
-| Type | Meaning | Parameters |
-|---|---|---|
-| `'sine'`, `'sin'` | ![sine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/sine.png) Sine wave. | `phase=0` |
-| `'cosine'`, `'cos'` | Cosine wave, same as `sine` with `phase=0.25`. | `phase=0` |
-| `'saw'`, `'sawtooth'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/sawtooth.png) Sawtooth wave. | `inversed=false` |
-| `'tri'`, `'triangle'` | ![triangle](https://raw.githubusercontent.com/dfcreative/periodic-function/master/triangle.png) Triangular wave. | `ratio=0.5` |
-| `'rect'`, `'rectangle'`, `'sqr'`, `'square'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/square.png) Rectangular wave. | `ratio=0.5` |
-| `'delta'`, `'pulse'` | ![pulse](https://raw.githubusercontent.com/dfcreative/periodic-function/master/pulse.png) 1-sample pulse. | |
-| `'series'`, `'fourier'`, `'harmonics'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/fourier.png) Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
-| `'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/clausen.png) Clausen function. | `limit=10` |
-| `'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/step.png) Step function on a sample set. | `samples=[...]` |
-| `'interpolate'` | ![interpolate](https://raw.githubusercontent.com/dfcreative/periodic-function/master/interpolate.png) Interpolate function on a sample set. | `samples=[...]` |
-| `'noise'` | ![noise](https://raw.githubusercontent.com/dfcreative/periodic-function/master/noise.png) Repeated noise fragment. |  |
+| Type | Waveshape | Meaning | Parameters |
+|---|---|---|---|
+| `'sine'`, `'sin'` | ![sine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sine.png) | Sine wave. | `phase=0` |
+| `'cosine'`, `'cos'` | ![cosine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/cosine.png) | Cosine wave, same as `sine` with `phase=0.25`. | `phase=0` |
+| `'saw'`, `'sawtooth'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sawtooth.png) | Sawtooth wave. | `inversed=false` |
+| `'tri'`, `'triangle'` | ![triangle](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/triangle.png) | Triangular wave. | `ratio=0.5` |
+| `'rect'`, `'rectangle'`, `'sqr'`, `'square'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/square.png) | Rectangular wave. | `ratio=0.5` |
+| `'delta'`, `'pulse'` | ![pulse](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/pulse.png) | 1-sample pulse. | |
+| `'series'`, `'fourier'`, `'harmonics'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/fourier.png) | Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
+| `'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/clausen.png) | Clausen function. | `limit=10` |
+| `'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/step.png) | Step function on a sample set. | `samples=[...]` |
+| `'interpolate'` | ![interpolate](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/interpolate.png) | Interpolate function on a sample set. | `samples=[...]` |
+| `'noise'` | ![noise](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/noise.png) | Repeated noise fragment. |  |
 
 #### A-rate params
 
