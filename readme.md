@@ -66,7 +66,7 @@ let abuf4 = seq()
 
 #### Types
 
-Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature, called once per `oscillate`.
+Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature.
 
 | Type | Waveshape | Meaning | Parameters |
 |---|:---:|---|---|
@@ -84,7 +84,7 @@ Some periodic functions may provide additional parameters, which can be passed t
 
 #### A-rate params
 
-If parameters are functions, they are evaluated every `oscillate` call and receive `(t, ctx)` arguments and expected to return a plain value. `ctx` is an object with the following properties:
+If parameters are functions, they are evaluated every `oscillate` call with `(t, ctx)` arguments and expected to return a plain value. `ctx` is an object with the following properties:
 
 | Property | Meaning |
 |---|---|
@@ -102,29 +102,28 @@ If parameters are functions, they are evaluated every `oscillate` call and recei
 
 Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
 
-## Examples
-
 ```js
-// Output float32 arrays
+// Output float32 interleaved arrays
 let sine = createOscillator({
-	type: 'sine',
-	dtype: 'float32 planar',
-	channels: 2
+  type: 'sine',
+  dtype: 'float32 interleaved',
+  channels: 4,
+  sampleRate: 96000
 })
-let samples = sine(1024) //samples.length == 2048
+let samples = sine(1024) //samples.length == 8192
 
 
 // Change params dynamically
 let tri = createOscillator({
 	type: 'triangle',
-	frequency: (t, ctx) => t/100,
+	frequency: 1000,
 	sampleRate: 8000,
 	dtype: 'uint8'
 })
-
-let arr0 = tri(1024, {ratio: .3})
-let arr1 = tri(1024, {ratio: .4})
-let arr2 = tri(1024, {ratio: .5})
+let arr = new Uint8Array(1024)
+tri(arr, {ratio: .3})
+tri(arr, {ratio: .4})
+tri(arr, {ratio: .5})
 ```
 
 
