@@ -1,39 +1,78 @@
 # audio-oscillator [![Build Status](https://travis-ci.org/audiojs/audio-oscillator.svg?branch=master)](https://travis-ci.org/audiojs/audio-oscillator) [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-Oscillate some periodic wave into stream. [OscillatorNode](http://webaudio.github.io/web-audio-api/#the-oscillatornode-interface) in stream land.
+Fill array/buffer with periodic oscillation.
 
 ## Usage
 
 [![$ npm install audio-oscillator](http://nodei.co/npm/audio-oscillator.png?mini=true)](http://npmjs.org/package/audio-oscillator)
 
 ```js
-var Oscillator = require('audio-oscillator');
-var Speaker = require('audio-speaker');
-var Slice = require('audio-slice');
+var createOscillator = require('audio-oscillator');
+var createSpeaker = require('audio-speaker');
 
-Oscillator({
-	//in hz
-	frequency: 440,
+let oscillate = createOscillator({frequency: 440, type: 'saw'})
+let output = createSpeaker()
 
-	//in cents
-	detune: 0,
-
-	//sine, triangle, square, saw, pulse, wave
-	type: 'sine',
-
-	//normalize result of `wave` type
-	normalize: true
-})
-.pipe(Slice(1))
-.pipe(Speaker());
-
-
-//Set periodic wave from arrays of real and imaginary coefficients
-oscillator.setPeriodicWave(real, imag);
+//output oscillated sawtooth wave to speaker
+(function tick(error) {
+	let audioBuffer = oscillate(1024)
+	output(audioBuffer, tick)
+})()
 ```
+
+## API
+
+### oscillate = createOscillator(options?)
+
+Creatie oscillator function based on the `options`:
+
+| Property | Default | Meaning |
+|---|---|---|
+| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be a function with `(time, prev) => freq` signature. |
+| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be a function with `(time, prev) => freq` signature. |
+| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `(t, params) => val` signature. |
+| `format` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
+
+#### Types
+
+Some periodic functions may provide additional parameters, which can be additionally passed to `options`.
+
+| Type | Meaning | Parameters |
+|---|---|
+| `sine`, `sin` | Sine wave. | `phase=0` |
+| `cosine`, `cos` | Cosine wave, same as `sine` with `phase=0.25` | `phase=0` |
+| `saw`, `sawtooth` | Sawtooth wave. | `inversed=false` |
+| `tri`, `triangle` | Triangular wave. | `ratio=0.5` |
+| `rect`, `rectangle`, `sqr`, `square` | Rectangular wave. | `ratio=0.5` |
+| `delta`, `pulse` | 1-sample pulse. | |
+| `series`, `fourier`, `harmonics` | Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
+| `clausen` | Clausen function. | `limit=10` |
+| `step` | Step function on a sample set. | `samples=[...]` |
+| `interpolate` | Interpolate function on a sample set. | `samples=[...]` |
+| `noise` | Repeated noise fragment. | `` |
+
+
+### buffer = oscillate(buffer|length=1024, params?)
+
+Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide params with `{frequency, detune, ...}` properties.
+
+## Examples
+
+```js
+// Output float32 arrays
+let oscillate = createOscillator({format: 'float32'})
+
+
+// Change params dynamically
+
+
+```
+
+
 
 ## Related
 
-> [audio-generator](https://github.com/audiojs/audio-generator) — generate audio stream with a function.<br/>
-> [audio-speaker](https://github.com/audiojs/audio-speaker) — output audio stream to speaker in node/browser.<br/>
-> [web-audio-stream](https://github.com/audiojs/web-audio-stream) — stream to web-audio node.<br/>
+> [audio-generator](https://github.com/audiojs/audio-generator) − generate audio with a function.<br/>
+> [audio-speaker](https://github.com/audiojs/audio-speaker) − output audio to speaker in node/browser.<br/>
+> [web-audio-write](https://github.com/audiojs/web-audio-write) − write to web-audio node.<br/>
+> [periodic-function](https://github.com/dfcreative/periodic-function) − a collection of periodic functions.<br/>

@@ -1,139 +1,140 @@
 /**
- * Oscillator stream
- * http://webaudio.github.io/web-audio-api/#the-oscillatornode-interface
- *
  * @module  audio-oscillator
  */
 'use strict';
 
-var inherits = require('inherits');
-var Through = require('audio-through');
-var util = require('audio-buffer-utils');
+const periodic = require('periodic-function')
+const convert = require('pcm-convert')
+const aformat = require('audio-format')
+const createBuffer = require('audio-buffer-from')
+const isAudioBuffer = require('is-audio-buffer')
+const assert = require('assert')
+const extend = require('object-assign')
+
+module.exports = createOscillator
 
 
 /**
  * @constructor
  */
-function Oscillator (options) {
-	if (!(this instanceof Oscillator)) return new Oscillator(options);
+function createOscillator (options) {
+	if (!options) options = {}
 
-	Through.call(this, options);
+	let format = options.format || 'audiobuffer'
 
-	this.real = [0, 1];
-	this.im = [0, 0];
-}
-
-
-inherits(Oscillator, Through);
+	format = typeof format === 'string' ? aformat.parse(format) : aformat.detect(format)
+	if (!format.sampleRate) format.sampleRate = 44100
 
 
+	if (options.type == null) options.type = 'sine'
 
-/**
- * Fundamental oscillation frequency
- */
-Oscillator.prototype.frequency = 440;
-
-
-/**
- * Frequency detune
- *
- * @True {number}
- */
-Oscillator.prototype.detune = 0;
-
-
-/**
- * sine, square, sawtooth, triangle, custom
- */
-Oscillator.prototype.type = 'sine';
-
-
-/**
- * Normalization, used for periodic waves
- */
-Oscillator.prototype.normalize = true;
-
-
-/**
- * Collection of oscillator types. 0 < t < 1
- */
-Oscillator.prototype.types = {};
-
-Oscillator.prototype.types.sin =
-Oscillator.prototype.types.sine =
-function (t) {
-	return Math.sin(Math.PI * 2 * t);
-};
-
-Oscillator.prototype.types.square =
-Oscillator.prototype.types.rect =
-Oscillator.prototype.types.rectangle =
-function (t) {
-	if (t >= 0.5) return -1;
-	return 1;
-};
-
-Oscillator.prototype.types.pulse =
-Oscillator.prototype.types.delta =
-function (t) {
-	if (t < 0.01) return 1;
-	return -1;
-};
-
-Oscillator.prototype.types.sawtooth =
-Oscillator.prototype.types.saw =
-function (t) {
-	return 1 - 2 * t;
-};
-
-Oscillator.prototype.types.triangle =
-Oscillator.prototype.types.tri =
-function (t) {
-	if (t > 0.5) t = 1 - t;
-	return 1 - 4 * t;
-};
-
-Oscillator.prototype.types.wave =
-function (t, real, im, normalize) {
-	var res = 0;
-	var pi2 = Math.PI * 2;
-	var N = real.length;
-	var sum = [0,0];
-
-	for (var harmonic = 0; harmonic < N; harmonic++) {
-		res += real[harmonic] * Math.cos(pi2 * t * harmonic) + im[harmonic] * Math.sin(pi2 * t * harmonic);
-		sum[0] += real[harmonic];
-		sum[1] += im[harmonic];
+	//oscillating context
+	let ctx = {
+		frequency: options.frequency || 440,
+		detune: options.detune || 0,
+		count: 0,
+		time: 0,
+		t: 0
 	}
 
-	return normalize ? res / (sum[0] + sum[1]) : res;
-};
+	//handle function aliases
+	switch (options.type) {
+		case 'saw':
+		case 'sawtooth':
+			ctx.inversed = options.inversed != null ? options.inversed : false
+			options.type = (t, ctx) => periodic.sawtooth(t, ctx.inversed)
+			break;
+		case 'delta':
+		case 'pulse':
+			options.type = (t, ctx) => periodic.pulse(t)
+			break;
+		case 'tri':
+		case 'triangle':
+			ctx.ratio = options.ratio != null ? options.ratio : 0.5
+			options.type = (t, ctx) => periodic.triangle(t, ctx.ratio)
+			break;
+		case 'sqr':
+		case 'square':
+		case 'rect':
+		case 'rectangle':
+			ctx.ratio = options.ratio != null ? options.ratio : 0.5
+			options.type = (t, ctx) => periodic.rectangle(t, ctx.ratio)
+			break;
+		case 'series':
+		case 'periodic':
+		case 'fourier':
+			ctx.real = options.real != null ? options.real : [0, 1]
+			ctx.imag = options.imag
+			ctx.normalize = options.normalize != null ? options.normalize : true
+			options.type = (t, ctx) => periodic.series(t, ctx.real, ctx.imag, ctx.normalize)
+			break;
+		case 'cos':
+		case 'cosine':
+			ctx.phase = options.phase != null ? options.phase : 0
+			options.type = (t, ctx) => periodic.sine(t + ctx.phase + .25)
+			break;
+		case 'sin':
+		case 'sine':
+			ctx.phase = options.phase != null ? options.phase : 0
+			options.type = (t, ctx) => periodic.sine(t + ctx.phase)
+			break;
+		default:
+			if (typeof options.type === 'string') options.type = periodic[options.type]
+	}
 
-/**
- * Create periodic wave from arrays or real and imaginary coefficients.
- */
-Oscillator.prototype.setPeriodicWave = function (real, im) {
-	this.type = 'wave';
+	assert(options.type, 'Unrecognized type of function')
 
-	this.real = real;
-	this.im = im;
+	//figure out generating function
+	let generate = options.type
 
-	return this;
-};
+	return oscillate
 
 
-Oscillator.prototype.process = function (buf) {
-	var fn = this.types[this.type];
-	var count = this.count;
-	var period = this.sampleRate / (this.frequency * Math.pow(2, this.detune / 1200));
+	//fill passed source with oscillated data
+	function oscillate (dst, params) {
+		let buf = dst
 
-	var im = this.im, real = this.real, normalize = this.normalize;
-	util.fill(buf, function (x, i) {
-		return fn(((count + i) % period) / period, real, im, normalize);
-	});
+		if (buf == null) buf = 1024
 
-	return buf;
+		//make sure we deal with audio buffer
+		if (!isAudioBuffer(buf)) {
+			buf = createBuffer(buf, format)
+		}
+
+		if (params) extend(ctx, params)
+
+		let frequency = getParam('frequency', ctx)
+		let detune = getParam('detune', ctx)
+		let sampleRate = buf.sampleRate
+		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
+		let count = ctx.count
+
+		for (let c = 0, l = buf.length; c < buf.numberOfChannels; c++) {
+			let arr = buf.getChannelData(c)
+			for (let i = 0; i < l; i++) {
+				ctx.time = (count + i) / sampleRate
+				ctx.t = ((count + i) % period) / period
+				arr[i] = generate(ctx.t, ctx)
+			}
+		}
+
+		ctx.count += buf.length
+		ctx.time = ctx.count / buf.sampleRate
+
+
+		if (format.type === 'audiobuffer') return buf
+		if (dst.length) return convert(buf, format, dst)
+		return convert(buf, format)
+	}
+
+
+	//figure out periodic params
+	function getParam (param, ctx) {
+		var val = ctx[param]
+
+		if (val.call) return val(ctx)
+
+		return val
+	}
 }
 
-
-module.exports = Oscillator;
