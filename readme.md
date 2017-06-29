@@ -129,7 +129,11 @@ tri(arr, {ratio: .5})
 
 ## Related
 
-> [audio-generator](https://github.com/audiojs/audio-generator) − generate audio with a function.<br/>
-> [audio-speaker](https://github.com/audiojs/audio-speaker) − output audio to speaker in node/browser.<br/>
-> [web-audio-write](https://github.com/audiojs/web-audio-write) − write to web-audio node.<br/>
-> [periodic-function](https://github.com/dfcreative/periodic-function) − a collection of periodic functions.<br/>
+* [audio-generator](https://github.com/audiojs/audio-generator) − generate audio with a function.<br/>
+* [audio-speaker](https://github.com/audiojs/audio-speaker) − output audio to speaker in node/browser.<br/>
+* [web-audio-write](https://github.com/audiojs/web-audio-write) − write to web-audio node.<br/>
+* [periodic-function](https://github.com/dfcreative/periodic-function) − a collection of periodic functions.<br/>
+
+## License
+
+© 2017 Dima Yv. MIT License
