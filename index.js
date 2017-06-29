@@ -20,72 +20,77 @@ module.exports = createOscillator
 function createOscillator (options) {
 	if (!options) options = {}
 
-	let format = options.format || 'audiobuffer'
+	let format = options.dtype || 'audiobuffer'
 
 	format = typeof format === 'string' ? aformat.parse(format) : aformat.detect(format)
-	if (!format.sampleRate) format.sampleRate = 44100
-
-
-	if (options.type == null) options.type = 'sine'
 
 	//oscillating context
-	let ctx = {
-		frequency: options.frequency || 440,
-		detune: options.detune || 0,
+	let ctx = extend({}, options, {
 		count: 0,
 		time: 0,
 		t: 0
+	})
+
+	if (!ctx.type) ctx.type = 'sine'
+	if (!ctx.frequency) ctx.frequency = 440
+	if (!ctx.detune) ctx.detune = 0
+	if (!ctx.sampleRate) ctx.sampleRate = format.sampleRate || 44100
+
+	//registered a-rate params
+	let aParams = {}
+	function aParam (name, dflt) {
+		let val = options[name] != null ? options[name] : dflt
+		aParams[name] = val
 	}
 
-	//handle function aliases
-	switch (options.type) {
+
+	//figure out generator function
+	let generate
+	switch (ctx.type) {
 		case 'saw':
 		case 'sawtooth':
-			ctx.inversed = options.inversed != null ? options.inversed : false
-			options.type = (t, ctx) => periodic.sawtooth(t, ctx.inversed)
+			aParam('inversed', false)
+			generate = (t, ctx) => periodic.sawtooth(t, ctx.inversed)
 			break;
 		case 'delta':
 		case 'pulse':
-			options.type = (t, ctx) => periodic.pulse(t)
+			generate = (t, ctx) => periodic.pulse(t)
 			break;
 		case 'tri':
 		case 'triangle':
-			ctx.ratio = options.ratio != null ? options.ratio : 0.5
-			options.type = (t, ctx) => periodic.triangle(t, ctx.ratio)
+			aParam('ratio', 0.5)
+			generate = (t, ctx) => periodic.triangle(t, ctx.ratio)
 			break;
 		case 'sqr':
 		case 'square':
 		case 'rect':
 		case 'rectangle':
-			ctx.ratio = options.ratio != null ? options.ratio : 0.5
-			options.type = (t, ctx) => periodic.rectangle(t, ctx.ratio)
+			aParam('ratio', 0.5)
+			generate = (t, ctx) => periodic.square(t, ctx.ratio)
 			break;
 		case 'series':
 		case 'periodic':
 		case 'fourier':
-			ctx.real = options.real != null ? options.real : [0, 1]
-			ctx.imag = options.imag
-			ctx.normalize = options.normalize != null ? options.normalize : true
-			options.type = (t, ctx) => periodic.series(t, ctx.real, ctx.imag, ctx.normalize)
+			aParam('real', [0, 1])
+			aParam('imag', null)
+			aParam('normalize', true)
+			generate = (t, ctx) => periodic.fourier(t, ctx.real, ctx.imag, ctx.normalize)
 			break;
 		case 'cos':
 		case 'cosine':
-			ctx.phase = options.phase != null ? options.phase : 0
-			options.type = (t, ctx) => periodic.sine(t + ctx.phase + .25)
+			aParam('phase', 0)
+			generate = (t, ctx) => periodic.sine(t + ctx.phase + .25)
 			break;
 		case 'sin':
 		case 'sine':
-			ctx.phase = options.phase != null ? options.phase : 0
-			options.type = (t, ctx) => periodic.sine(t + ctx.phase)
+			aParam('phase', 0)
+			generate = (t, ctx) => periodic.sine(t + ctx.phase)
 			break;
 		default:
-			if (typeof options.type === 'string') options.type = periodic[options.type]
+			if (typeof ctx.type === 'string') generate = periodic[ctx.type]
 	}
 
-	assert(options.type, 'Unrecognized type of function')
-
-	//figure out generating function
-	let generate = options.type
+	assert(generate, 'Unrecognized type of function')
 
 	return oscillate
 
@@ -101,14 +106,29 @@ function createOscillator (options) {
 			buf = createBuffer(buf, format)
 		}
 
-		if (params) extend(ctx, params)
+		//take over new passed params
+		if (params) {
+			if (params.frequency) ctx.frequency = params.frequency
+			if (params.detune) ctx.detune = params.detune
+			for (let name in aParams) {
+				if (params[name] !== undefined) aParam(name, params[name])
+			}
+		}
 
-		let frequency = getParam('frequency', ctx)
-		let detune = getParam('detune', ctx)
+		//evaluate context
+		let frequency = ctx.frequency.call ? ctx.frequency(ctx.time, ctx) : ctx.frequency
+		let detune = ctx.detune.call ? ctx.detune(ctx.time, ctx) : ctx.detune
+
+		for (let name in aParams) {
+			let p = aParams[name]
+			ctx[name] = p && p.call ? p(ctx.time, ctx) : p
+		}
+
 		let sampleRate = buf.sampleRate
 		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
 		let count = ctx.count
 
+		//fill channels
 		for (let c = 0, l = buf.length; c < buf.numberOfChannels; c++) {
 			let arr = buf.getChannelData(c)
 			for (let i = 0; i < l; i++) {
@@ -118,23 +138,14 @@ function createOscillator (options) {
 			}
 		}
 
+		//increase counters
 		ctx.count += buf.length
 		ctx.time = ctx.count / buf.sampleRate
 
-
+		//convert to target dtype
 		if (format.type === 'audiobuffer') return buf
 		if (dst.length) return convert(buf, format, dst)
 		return convert(buf, format)
-	}
-
-
-	//figure out periodic params
-	function getParam (param, ctx) {
-		var val = ctx[param]
-
-		if (val.call) return val(ctx)
-
-		return val
 	}
 }
 

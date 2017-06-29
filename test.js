@@ -32,7 +32,7 @@ t('Fill audiobuffer', t => {
 })
 
 t('Sine', t => {
-	let osc = createOscillator({format: 'float32 44100', frequency: 11025})
+	let osc = createOscillator({dtype: 'float32 44100', frequency: 11025})
 
 	let arr = osc(4)
 
@@ -45,7 +45,7 @@ t('Sine', t => {
 t('Triangle', function (t) {
 	let tri = createOscillator({
 		type: 'triangle',
-		format: 'int8',
+		dtype: 'int8',
 		frequency: 11025
 	})
 
@@ -65,89 +65,187 @@ t('Triangle', function (t) {
 	t.end()
 });
 
-t.only('Square', function () {
-	let sq = Oscillator({
-		type: 'square'
+t('Square', function (t) {
+	let sq = createOscillator({
+		type: 'square',
+		frequency: 44100/8,
+		dtype: 'array'
 	})
-	.pipe(Slice(2))
-	.pipe(Speaker())
+
+	let arr = sq(8)
+
+	t.equal(arr.length, 8)
+	t.ok(Array.isArray(arr))
+	t.deepEqual(arr, [1,1,1,1,-1,-1,-1,-1])
+
+
+	let sq0 = createOscillator({
+		type: 'square',
+		frequency: 44100/8,
+		dtype: 'float64',
+		ratio: 0
+	})
+
+	let arr0 = sq0(8)
+
+	t.equal(arr0.length, 8)
+	t.ok(ArrayBuffer.isView(arr0))
+	t.deepEqual(arr0, [-1,-1,-1,-1,-1,-1,-1,-1])
+
+
+	let sq1 = createOscillator({
+		type: 'square',
+		frequency: 44100/8,
+		dtype: 'float64',
+		ratio: 1
+	})
+
+	let arr1 = sq1(8)
+
+	t.equal(arr1.length, 8)
+	t.ok(ArrayBuffer.isView(arr1))
+	t.deepEqual(arr1, [1,1,1,1,1,1,1,1])
+
+	t.end()
 });
 
-t('Pulse', function () {
-	let pulse = Oscillator({
-		type: 'pulse'
+t('Pulse', function (t) {
+	let pulse = createOscillator({
+		type: 'pulse',
+		frequency: 440,
+		dtype: 'arraybuffer'
 	})
-	.pipe(Slice(2))
-	.pipe(Speaker())
+
+	let arr = pulse(8)
+
+	t.equal(arr.byteLength, 8)
+	t.ok(arr instanceof ArrayBuffer)
+	t.deepEqual(new Uint8Array(arr), [255,127,127,127,127,127,127,127])
+
+	t.end()
 });
 
-t('Saw', function () {
-	let saw = Oscillator({
-		type: 'saw'
+t('Saw', function (t) {
+	let saw = createOscillator({
+		type: 'sawtooth',
+		frequency: 44100/4,
+		dtype: 'array'
 	})
-	.pipe(Slice(2))
-	.pipe(Speaker())
+
+	let arr = saw(4)
+
+	t.deepEqual(arr, [1, .5, 0, -.5])
+
+	let arr2 = saw(arr, {inversed: true})
+
+	t.deepEqual(arr, [-1, -.5, 0, .5])
+	t.equal(arr, arr2)
+
+	t.end()
 });
 
-t('real/imag data', function () {
-	let wave = Oscillator({
-		type: 'wave',
-		normalize: true
-	})
-	.setPeriodicWave([0, 1, 0, 0], [0, 1, 1, 1])
-	.pipe(Slice(2))
-	.pipe(Speaker())
-});
-
-t('Detune', function () {
-	let detuned = Oscillator({
-		type: 'saw',
-		detune: 50
-	})
-	.pipe(Slice(2))
-	.pipe(Speaker())
-});
-
-
-t('Float32Array', function () {
-	let osc = Oscillator({
-		frequency: 1000,
-		dtype: 'float32'
-	})
-
-	let arr = osc()
-})
-
-
-t('float32 case', t => {
-	let oscillate = createOscillator({
-		dtype: 'float32'
-	})
-
-	let arr = oscillate(1024)
-})
-
-t('uint8 case', t => {
-	//need uint8 filled with sine, regularly
+t('fourier series', function (t) {
 	let osc = createOscillator({
+		type: 'series',
+		normalize: true,
+		frequency: 44100/4,
+		dtype: 'uint16'
+	})
+
+	let oscSin = createOscillator({
+		type: 'sin',
+		normalize: true,
+		frequency: 44100/4,
+		dtype: 'uint16'
+	})
+
+	// let sin = oscSin(4, {phase: .25})
+	// let arr = osc(4)
+	// t.deepEqual(arr, sin)
+
+
+	let sin1 = oscSin(4, {phase: 0})
+	let sin2 = oscSin(4, {frequency: 44100/2, phase: 0})
+	sin1 = sin1.map((v, i) => (v + sin2[i])/2 )
+	arr = osc(4, {real: null, imag: [0, 1, 1]})
+
+	t.deepEqual(arr, sin1)
+
+	t.end()
+});
+
+t('detune', function (t) {
+	let osc = createOscillator({
+		type: 'sine',
+		frequency: 44100/4,
+		dtype: 'int8'
+	})
+
+	let arr = osc(8)
+
+	t.deepEqual(arr, [0, 127, 0, -128, 0, 127, 0, -128])
+
+	osc(arr, {detune: -1200})
+
+	t.deepEqual(arr, [0,89,127,89,0,-90,-128,-90])
+
+	t.end()
+});
+
+t.skip('function params', t => {
+	let osc = createOscillator({
+		type: 'tri',
+		dtype: 'uint8',
+		sampleRate: 8000,
+		ratio: (time, ctx) => ctx.count ? 0 : .5,
+		frequency: (time, ctx) => ctx.count ? ctx.sampleRate/4 : ctx.sampleRate/8
+	})
+
+	let arr = osc(8)
+	console.log(arr)
+
+	t.end()
+})
+
+t('function type', t => {
+	t.end()
+})
+
+t('pass params', t => {
+
+	t.end()
+})
+
+t('pass frequency in format', t => {
+
+	t.end()
+})
+
+t('multichannel data', t => {
+
+	t.end()
+})
+
+t('Output float32 arrays', t => {
+	let sine = createOscillator({
+		type: 'sine',
+		dtype: 'float32 planar',
+		channels: 2
+	})
+	let samples = sine(1024) //samples.length == 2048
+	t.end()
+})
+
+t('Change params dynamically', t => {
+	let tri = createOscillator({
+		type: 'triangle',
+		frequency: (t, ctx) => t/100,
+		sampleRate: 8000,
 		dtype: 'uint8'
 	})
 
-	let arr = osc(1024)
+	let arr0 = tri(1024, {ratio: .3})
+	let arr1 = tri(1024, {ratio: .4})
+	let arr2 = tri(1024, {ratio: .5})
+	t.end()
 })
-
-t('timbre experiment', t => {
-	//need to reproduce timbre
-	let timbre = createOscillator({
-		frequency: 100,
-		real: [0, .1, .2, .1, .2, .5, .2, .1, .2, .1, 1]
-	})
-
-	let arr = timbre(1024)
-})
-
-t('function params')
-
-t('pass params')
-
-t('pass params')

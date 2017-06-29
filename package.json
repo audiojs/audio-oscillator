@@ -7,10 +7,11 @@
     "audio-buffer-from": "^1.0.2",
     "audio-format": "^2.0.0",
     "pcm-convert": "^1.4.0",
-    "periodic-function": "^1.1.0"
+    "periodic-function": "^1.1.1"
   },
   "devDependencies": {
-    "tape": "^4.6.3"
+    "tape": "^4.6.3",
+    "web-audio-write": "^1.2.1"
   },
   "scripts": {
     "test": "node test.js"

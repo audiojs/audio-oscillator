@@ -28,17 +28,19 @@ Creatie oscillator function based on the `options`:
 
 | Property | Default | Meaning |
 |---|---|---|
-| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be a function with `(time, prev) => freq` signature. |
-| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be a function with `(time, prev) => freq` signature. |
+| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be a function with `(time, params) => freq` signature called once per `oscillate`. |
+| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be a function with `(time, params) => detune` signature called once per `oscillate`. |
 | `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `(t, params) => val` signature. |
-| `format` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
+| `sampleRate` | `44100` | Output data `sampleRate`. |
+| `channels` | `1` | Output data number of channels. |
+| `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
 
 #### Types
 
-Some periodic functions may provide additional parameters, which can be additionally passed to `options`.
+Some periodic functions may provide additional parameters, which can be additionally passed to `options`. Every additional param may be a function with `(time, params) => value` signature, called once per `oscillate`.
 
 | Type | Meaning | Parameters |
-|---|---|
+|---|---|---|
 | `sine`, `sin` | Sine wave. | `phase=0` |
 | `cosine`, `cos` | Cosine wave, same as `sine` with `phase=0.25` | `phase=0` |
 | `saw`, `sawtooth` | Sawtooth wave. | `inversed=false` |
@@ -60,14 +62,26 @@ Fill passed audio buffer/array or create a new one of the `length` with oscillat
 
 ```js
 // Output float32 arrays
-let oscillate = createOscillator({format: 'float32'})
+let sine = createOscillator({
+	type: 'sine',
+	dtype: 'float32 planar',
+	channels: 2
+})
+let samples = sine(1024) //samples.length == 2048
 
 
 // Change params dynamically
+let tri = createOscillator({
+	type: 'triangle',
+	frequency: (t, ctx) => t/100,
+	sampleRate: 8000,
+	dtype: 'uint8'
+})
 
-
+let arr0 = tri(1024, {ratio: .3})
+let arr1 = tri(1024, {ratio: .4})
+let arr2 = tri(1024, {ratio: .5})
 ```
-
 
 
 ## Related
