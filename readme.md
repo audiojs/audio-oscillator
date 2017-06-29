@@ -1,4 +1,4 @@
-# audio-oscillator [![Build Status](https://travis-ci.org/audiojs/audio-oscillator.svg?branch=master)](https://travis-ci.org/audiojs/audio-oscillator) [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+# audio-oscillator [![Build Status](https://travis-ci.org/audiojs/audio-oscillator.svg?branch=master)](https://travis-ci.org/audiojs/audio-oscillator) [![unstable](https://img.shields.io/badge/stability-unstable-green.svg)](http://github.com/badges/stability-badges)
 
 Fill array/buffer with periodic oscillation.
 
@@ -45,10 +45,10 @@ let abuf3 = timbre()
 
 // oscillator with dynamic params
 let seq = createOscillator({
-	type: 'step',
-	samples: [0,0,.5,1,1,.5],
-	frequency: 1000,
-	detune: (t, ctx) => t*0.01
+  type: 'step',
+  samples: [0,0,.5,1,1,.5],
+  frequency: 1000,
+  detune: (t, ctx) => t*0.01
 })
 let abuf4 = seq()
 ```
@@ -115,10 +115,10 @@ let samples = sine(1024) //samples.length == 8192
 
 // Change params dynamically
 let tri = createOscillator({
-	type: 'triangle',
-	frequency: 1000,
-	sampleRate: 8000,
-	dtype: 'uint8'
+  type: 'triangle',
+  frequency: 1000,
+  sampleRate: 8000,
+  dtype: 'uint8'
 })
 let arr = new Uint8Array(1024)
 tri(arr, {ratio: .3})
