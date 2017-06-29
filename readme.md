@@ -15,8 +15,8 @@ let output = createSpeaker()
 
 //output oscillated sawtooth wave to speaker
 (function tick(error) {
-	let audioBuffer = oscillate(1024)
-	output(audioBuffer, tick)
+  let audioBuffer = oscillate(1024)
+  output(audioBuffer, tick)
 })()
 ```
 
@@ -28,35 +28,50 @@ Creatie oscillator function based on the `options`:
 
 | Property | Default | Meaning |
 |---|---|---|
-| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be a function with `(time, params) => freq` signature called once per `oscillate`. |
-| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be a function with `(time, params) => detune` signature called once per `oscillate`. |
-| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `(t, params) => val` signature. |
-| `sampleRate` | `44100` | Output data `sampleRate`. |
+| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `(t, ctx) => val` signature. |
+| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `(time, ctx) => freq` signature. |
+| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `(time, ctx) => detune` signature. |
+| `sampleRate` | `44100` | Output data sample rate. |
 | `channels` | `1` | Output data number of channels. |
 | `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
 
 #### Types
 
-Some periodic functions may provide additional parameters, which can be additionally passed to `options`. Every additional param may be a function with `(time, params) => value` signature, called once per `oscillate`.
+Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature, called once per `oscillate`.
 
 | Type | Meaning | Parameters |
 |---|---|---|
-| `sine`, `sin` | Sine wave. | `phase=0` |
-| `cosine`, `cos` | Cosine wave, same as `sine` with `phase=0.25` | `phase=0` |
-| `saw`, `sawtooth` | Sawtooth wave. | `inversed=false` |
-| `tri`, `triangle` | Triangular wave. | `ratio=0.5` |
-| `rect`, `rectangle`, `sqr`, `square` | Rectangular wave. | `ratio=0.5` |
-| `delta`, `pulse` | 1-sample pulse. | |
-| `series`, `fourier`, `harmonics` | Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
-| `clausen` | Clausen function. | `limit=10` |
-| `step` | Step function on a sample set. | `samples=[...]` |
-| `interpolate` | Interpolate function on a sample set. | `samples=[...]` |
-| `noise` | Repeated noise fragment. | `` |
+| `'sine'`, `'sin'` | ![sine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/sine.png) Sine wave. | `phase=0` |
+| `'cosine'`, `'cos'` | Cosine wave, same as `sine` with `phase=0.25`. | `phase=0` |
+| `'saw'`, `'sawtooth'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/sawtooth.png) Sawtooth wave. | `inversed=false` |
+| `'tri'`, `'triangle'` | ![triangle](https://raw.githubusercontent.com/dfcreative/periodic-function/master/triangle.png) Triangular wave. | `ratio=0.5` |
+| `'rect'`, `'rectangle'`, `'sqr'`, `'square'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/square.png) Rectangular wave. | `ratio=0.5` |
+| `'delta'`, `'pulse'` | ![pulse](https://raw.githubusercontent.com/dfcreative/periodic-function/master/pulse.png) 1-sample pulse. | |
+| `'series'`, `'fourier'`, `'harmonics'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/fourier.png) Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
+| `'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/clausen.png) Clausen function. | `limit=10` |
+| `'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/step.png) Step function on a sample set. | `samples=[...]` |
+| `'interpolate'` | ![interpolate](https://raw.githubusercontent.com/dfcreative/periodic-function/master/interpolate.png) Interpolate function on a sample set. | `samples=[...]` |
+| `'noise'` | ![noise](https://raw.githubusercontent.com/dfcreative/periodic-function/master/noise.png) Repeated noise fragment. |  |
 
+#### A-rate params
 
-### buffer = oscillate(buffer|length=1024, params?)
+If parameters are functions, they are evaluated every `oscillate` call and receive `(t, ctx)` arguments and expected to return a plain value. `ctx` is an object with the following properties:
 
-Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide params with `{frequency, detune, ...}` properties.
+| Property | Meaning |
+|---|---|
+| `count` | Current frame offset in samples. |
+| `time` | Current frame start time. |
+| `t` | Current amount of turn, `0..1`. |
+| `frequency` | Last frame frequency. |
+| `detune` | Last frame detune. |
+| `sampleRate` | Static value, sample rate. |
+| `channels` | Static value, channels. |
+| `type` | Current type of generator. |
+| `...params` | Custom params for generator function. |
+
+### buffer = oscillate(buffer|length=1024, options?)
+
+Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
 
 ## Examples
 

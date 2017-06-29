@@ -35,6 +35,7 @@ function createOscillator (options) {
 	if (!ctx.frequency) ctx.frequency = 440
 	if (!ctx.detune) ctx.detune = 0
 	if (!ctx.sampleRate) ctx.sampleRate = format.sampleRate || 44100
+	if (!ctx.channels) ctx.channels = format.channels || 44100
 
 	//registered a-rate params
 	let aParams = {}
