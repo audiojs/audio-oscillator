@@ -40,7 +40,7 @@ Creatie oscillator function based on the `options`:
 Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature, called once per `oscillate`.
 
 | Type | Waveshape | Meaning | Parameters |
-|---|---|---|---|
+|---|:---:|---|---|
 | `'sine'`, `'sin'` | ![sine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sine.png) | Sine wave. | `phase=0` |
 | `'cosine'`, `'cos'` | ![cosine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/cosine.png) | Cosine wave, same as `sine` with `phase=0.25`. | `phase=0` |
 | `'saw'`, `'sawtooth'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sawtooth.png) | Sawtooth wave. | `inversed=false` |
