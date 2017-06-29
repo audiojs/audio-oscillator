@@ -1,7 +1,5 @@
 var t = require('tape');
 var createOscillator = require('./');
-var Slice = require('audio-slice');
-var Speaker = require('audio-speaker');
 var createBuffer = require('audio-buffer-from')
 var to = require('pcm-convert')
 
