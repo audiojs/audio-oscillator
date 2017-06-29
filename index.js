@@ -62,8 +62,8 @@ function createOscillator (options) {
 			aParam('ratio', 0.5)
 			generate = (t, ctx) => periodic.triangle(t, ctx.ratio)
 			break;
-		case 'sqr':
 		case 'square':
+		case 'quad':
 		case 'rect':
 		case 'rectangle':
 			aParam('ratio', 0.5)
@@ -71,6 +71,7 @@ function createOscillator (options) {
 			break;
 		case 'series':
 		case 'periodic':
+		case 'harmonics':
 		case 'fourier':
 			aParam('real', [0, 1])
 			aParam('imag', null)

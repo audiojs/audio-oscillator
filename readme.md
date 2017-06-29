@@ -13,7 +13,7 @@ var createSpeaker = require('audio-speaker');
 let oscillate = createOscillator({frequency: 440, type: 'saw'})
 let output = createSpeaker()
 
-//output oscillated sawtooth wave to speaker
+// output oscillated sawtooth wave to speaker
 (function tick(error) {
   let audioBuffer = oscillate(1024)
   output(audioBuffer, tick)
@@ -24,7 +24,36 @@ let output = createSpeaker()
 
 ### oscillate = createOscillator(options?)
 
-Creatie oscillator function based on the `options`:
+Creatie oscillator function based on the `options`.
+
+```js
+// simple sine oscillator
+let sine = createOscillator({type: 'sine', frequency: 1000})
+let abuf = sine()
+
+// triangular oscillator with uint8 output data
+let tri = createOscillator({type: 'triangle', ratio: 0.2, dtype: 'uint8', frequency: 200})
+let uint8arr = tri()
+
+// stereo oscillations
+let rect = createOscillator({type: 'rect', channels: 2, frequency: 1000})
+let abuf2 = rect()
+
+// custom harmonics oscillations
+let timbre = createOscillator({type: 'series', real: [0, 1, 0, .5]})
+let abuf3 = timbre()
+
+// oscillator with dynamic params
+let seq = createOscillator({
+	type: 'step',
+	samples: [0,0,.5,1,1,.5],
+	frequency: 1000,
+	detune: (t, ctx) => t*0.01
+})
+let abuf4 = seq()
+```
+
+#### Options
 
 | Property | Default | Meaning |
 |---|---|---|
@@ -45,9 +74,9 @@ Some periodic functions may provide additional parameters, which can be passed t
 | `'cosine'`, `'cos'` | ![cosine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/cosine.png) | Cosine wave, same as `sine` with `phase=0.25`. | `phase=0` |
 | `'saw'`, `'sawtooth'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sawtooth.png) | Sawtooth wave. | `inversed=false` |
 | `'tri'`, `'triangle'` | ![triangle](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/triangle.png) | Triangular wave. | `ratio=0.5` |
-| `'rect'`, `'rectangle'`, `'sqr'`, `'square'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/square.png) | Rectangular wave. | `ratio=0.5` |
+| `'rect'`, `'rectangle'`, `'quad'`, `'square'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/square.png) | Rectangular wave. | `ratio=0.5` |
 | `'delta'`, `'pulse'` | ![pulse](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/pulse.png) | 1-sample pulse. | |
-| `'series'`, `'fourier'`, `'harmonics'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/fourier.png) | Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
+| `'series'`, `'fourier'`, `'harmonics'`, `'periodic'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/fourier.png) | Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
 | `'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/clausen.png) | Clausen function. | `limit=10` |
 | `'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/step.png) | Step function on a sample set. | `samples=[...]` |
 | `'interpolate'` | ![interpolate](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/interpolate.png) | Interpolate function on a sample set. | `samples=[...]` |
