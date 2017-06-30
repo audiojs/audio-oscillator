@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const periodic = require('../../periodic-function')
+const periodic = require('periodic-function')
 const convert = require('pcm-convert')
 const aformat = require('audio-format')
 const createBuffer = require('audio-buffer-from')
