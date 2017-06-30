@@ -1,3 +1,5 @@
+'use strict'
+
 var t = require('tape');
 var createOscillator = require('./');
 var createBuffer = require('audio-buffer-from')
@@ -159,17 +161,17 @@ t('fourier series', function (t) {
 		dtype: 'uint16'
 	})
 
-	// let sin = oscSin(4, {phase: .25})
-	// let arr = osc(4)
-	// t.deepEqual(arr, sin)
+	let sin = oscSin(4, {phase: .25})
+	let arr = osc(4)
+	t.deepEqual(arr, sin)
 
 
 	let sin1 = oscSin(4, {phase: 0})
 	let sin2 = oscSin(4, {frequency: 44100/2, phase: 0})
 	sin1 = sin1.map((v, i) => (v + sin2[i])/2 )
-	arr = osc(4, {real: null, imag: [0, 1, 1]})
+	let arr2 = osc(4, {real: null, imag: [0, 1, 1]})
 
-	t.deepEqual(arr, sin1)
+	t.deepEqual(arr2, sin1)
 
 	t.end()
 });
