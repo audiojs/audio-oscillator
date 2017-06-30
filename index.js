@@ -1,139 +1,181 @@
 /**
- * Oscillator stream
- * http://webaudio.github.io/web-audio-api/#the-oscillatornode-interface
- *
  * @module  audio-oscillator
  */
 'use strict';
 
-var inherits = require('inherits');
-var Through = require('audio-through');
-var util = require('audio-buffer-utils');
+const periodic = require('periodic-function')
+const convert = require('pcm-convert')
+const aformat = require('audio-format')
+const createBuffer = require('audio-buffer-from')
+const isAudioBuffer = require('is-audio-buffer')
+const assert = require('assert')
+
+module.exports = createOscillator
 
 
 /**
  * @constructor
  */
-function Oscillator (options) {
-	if (!(this instanceof Oscillator)) return new Oscillator(options);
+function createOscillator (options) {
+	if (!options) options = {}
 
-	Through.call(this, options);
+	let format = options.dtype || 'audiobuffer'
 
-	this.real = [0, 1];
-	this.im = [0, 0];
-}
+	format = typeof format === 'string' ? aformat.parse(format) : aformat.detect(format)
 
-
-inherits(Oscillator, Through);
-
-
-
-/**
- * Fundamental oscillation frequency
- */
-Oscillator.prototype.frequency = 440;
-
-
-/**
- * Frequency detune
- *
- * @True {number}
- */
-Oscillator.prototype.detune = 0;
-
-
-/**
- * sine, square, sawtooth, triangle, custom
- */
-Oscillator.prototype.type = 'sine';
-
-
-/**
- * Normalization, used for periodic waves
- */
-Oscillator.prototype.normalize = true;
-
-
-/**
- * Collection of oscillator types. 0 < t < 1
- */
-Oscillator.prototype.types = {};
-
-Oscillator.prototype.types.sin =
-Oscillator.prototype.types.sine =
-function (t) {
-	return Math.sin(Math.PI * 2 * t);
-};
-
-Oscillator.prototype.types.square =
-Oscillator.prototype.types.rect =
-Oscillator.prototype.types.rectangle =
-function (t) {
-	if (t >= 0.5) return -1;
-	return 1;
-};
-
-Oscillator.prototype.types.pulse =
-Oscillator.prototype.types.delta =
-function (t) {
-	if (t < 0.01) return 1;
-	return -1;
-};
-
-Oscillator.prototype.types.sawtooth =
-Oscillator.prototype.types.saw =
-function (t) {
-	return 1 - 2 * t;
-};
-
-Oscillator.prototype.types.triangle =
-Oscillator.prototype.types.tri =
-function (t) {
-	if (t > 0.5) t = 1 - t;
-	return 1 - 4 * t;
-};
-
-Oscillator.prototype.types.wave =
-function (t, real, im, normalize) {
-	var res = 0;
-	var pi2 = Math.PI * 2;
-	var N = real.length;
-	var sum = [0,0];
-
-	for (var harmonic = 0; harmonic < N; harmonic++) {
-		res += real[harmonic] * Math.cos(pi2 * t * harmonic) + im[harmonic] * Math.sin(pi2 * t * harmonic);
-		sum[0] += real[harmonic];
-		sum[1] += im[harmonic];
+	//oscillating context
+	let ctx = {
+		type: options.type || 'sine',
+		count: 0,
+		time: 0,
+		t: 0,
+		adjust: 0,
+		period: 0
 	}
 
-	return normalize ? res / (sum[0] + sum[1]) : res;
-};
+	ctx.sampleRate = format.sampleRate = options.sampleRate || format.sampleRate || 44100
+	ctx.channels = format.channels = options.channels || format.channels || 1
 
-/**
- * Create periodic wave from arrays or real and imaginary coefficients.
- */
-Oscillator.prototype.setPeriodicWave = function (real, im) {
-	this.type = 'wave';
+	//register a-rate param
+	let aParams = {}, reserved = Object.keys(ctx)
+	function aParam (name, opts, dflt) {
+		let val = opts[name] !== undefined ? opts[name] : dflt
+		aParams[name] = val
+	}
 
-	this.real = real;
-	this.im = im;
+	aParam('frequency', options, 440)
+	aParam('detune', options, 0)
 
-	return this;
-};
+	//figure out generator function
+	let generate
+	switch (ctx.type) {
+		case 'saw':
+		case 'sawtooth':
+			aParam('inversed', options, false)
+			generate = ctx => periodic.sawtooth(ctx.t, ctx.inversed)
+			break;
+		case 'delta':
+		case 'pulse':
+			generate = ctx => periodic.pulse(ctx.t)
+			break;
+		case 'tri':
+		case 'triangle':
+			aParam('ratio', options, 0.5)
+			generate = ctx => periodic.triangle(ctx.t, ctx.ratio)
+			break;
+		case 'square':
+		case 'quad':
+		case 'rect':
+		case 'rectangle':
+			aParam('ratio', options, 0.5)
+			generate = ctx => periodic.square(ctx.t, ctx.ratio)
+			break;
+		case 'series':
+		case 'periodic':
+		case 'harmonics':
+		case 'fourier':
+			aParam('real', options, [0, 1])
+			aParam('imag', options, null)
+			aParam('normalize', options, true)
+			generate = ctx => periodic.fourier(ctx.t, ctx.real, ctx.imag, ctx.normalize)
+			break;
+		case 'cos':
+		case 'cosine':
+			aParam('phase', options, 0)
+			generate = ctx => periodic.sine(ctx.t + ctx.phase + .25)
+			break;
+		case 'sin':
+		case 'sine':
+			aParam('phase', options, 0)
+			generate = ctx => periodic.sine(ctx.t + ctx.phase)
+			break;
+		case 'step':
+		case 'samples':
+			aParam('samples', options, [0])
+			generate = ctx => periodic.step(ctx.t, ctx.samples)
+			break;
+		case 'inter':
+		case 'interpolate':
+		case 'values':
+			aParam('samples', options, [0])
+			generate = ctx => periodic.interpolate(ctx.t, ctx.samples)
+			break;
+		case 'clausen':
+
+		default:
+			if (typeof ctx.type === 'string') {
+				let fn = periodic[ctx.type]
+				generate = ctx => fn(ctx.t)
+			}
+			else generate = ctx.type
+	}
+
+	assert(generate, 'Unrecognized type of function')
 
 
-Oscillator.prototype.process = function (buf) {
-	var fn = this.types[this.type];
-	var count = this.count;
-	var period = this.sampleRate / (this.frequency * Math.pow(2, this.detune / 1200));
 
-	var im = this.im, real = this.real, normalize = this.normalize;
-	util.fill(buf, function (x, i) {
-		return fn(((count + i) % period) / period, real, im, normalize);
-	});
+	//fill passed source with oscillated data
+	function oscillate (dst, params) {
+		let buf = dst
 
-	return buf;
+		if (buf == null) buf = 1024
+
+		//make sure we deal with audio buffer
+		if (!isAudioBuffer(buf)) {
+			buf = createBuffer(buf, format)
+		}
+
+		//take over new passed params
+		if (params) {
+			for (let name in params) {
+				if (reserved.indexOf(name) >= 0) {
+					ctx[name] = params[name]
+				}
+				else {
+					aParam(name, params, ctx[name])
+				}
+			}
+		}
+
+		//evaluate context
+		for (let name in aParams) {
+			let p = aParams[name]
+			ctx[name] = p && p.call ? p(ctx) : p
+		}
+
+		let frequency = ctx.frequency
+		let detune = ctx.detune
+		let sampleRate = buf.sampleRate
+		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
+
+		//correct freq/detune change
+		if (period != ctx.period) {
+			if (ctx.period) {
+				ctx.adjust = ctx.t - (ctx.count % period) / period
+			}
+			ctx.period = period
+		}
+
+		//fill channels
+		let data = [], cnum = buf.numberOfChannels
+		for (let c = 0, l = buf.length; c < cnum; c++) {
+			data[c] = buf.getChannelData(c)
+		}
+		for (let i = 0, l = buf.length; i < l; i++) {
+			ctx.time = (ctx.count) / sampleRate
+			ctx.t = (ctx.count % period) / period + ctx.adjust
+			for (let c = 0; c < cnum; c++) {
+				data[c][i] = generate(ctx)
+			}
+			ctx.count++
+		}
+
+		//convert to target dtype
+		if (format.type === 'audiobuffer') return buf
+		if (dst.length) return convert(buf, format, dst)
+		return convert(buf, format)
+	}
+
+	return oscillate
 }
 
-
-module.exports = Oscillator;
