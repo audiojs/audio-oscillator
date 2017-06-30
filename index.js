@@ -100,6 +100,8 @@ function createOscillator (options) {
 			aParam('samples', options, [0])
 			generate = ctx => periodic.interpolate(ctx.t, ctx.samples)
 			break;
+		case 'clausen':
+
 		default:
 			if (typeof ctx.type === 'string') {
 				let fn = periodic[ctx.type]
@@ -155,14 +157,17 @@ function createOscillator (options) {
 		}
 
 		//fill channels
-		for (let c = 0, l = buf.length; c < buf.numberOfChannels; c++) {
-			let arr = buf.getChannelData(c)
-			for (let i = 0; i < l; i++) {
-				ctx.time = (ctx.count) / sampleRate
-				ctx.t = (ctx.count % period) / period + ctx.adjust
-				arr[i] = generate(ctx)
-				ctx.count++
+		let data = [], cnum = buf.numberOfChannels
+		for (let c = 0, l = buf.length; c < cnum; c++) {
+			data[c] = buf.getChannelData(c)
+		}
+		for (let i = 0, l = buf.length; i < l; i++) {
+			ctx.time = (ctx.count) / sampleRate
+			ctx.t = (ctx.count % period) / period + ctx.adjust
+			for (let c = 0; c < cnum; c++) {
+				data[c][i] = generate(ctx)
 			}
+			ctx.count++
 		}
 
 		//convert to target dtype

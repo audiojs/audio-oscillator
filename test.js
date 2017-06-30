@@ -277,8 +277,17 @@ t('Output float32 arrays', t => {
 		dtype: 'float32 planar',
 		channels: 2
 	})
-	let samples = sine(1024) //samples.length == 2048
+	let samples = sine(2)
 
-	t.equal(samples.length, 2048)
+	t.equal(samples.length, 4)
+	t.equal(samples[0], samples[2])
+	t.equal(samples[1], samples[3])
+
+	let samples2 = sine(2)
+
+	t.equal(samples2.length, 4)
+	t.equal(samples2[0], samples2[2])
+	t.equal(samples2[1], samples2[3])
+
 	t.end()
 })

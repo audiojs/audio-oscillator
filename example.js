@@ -7,7 +7,7 @@ const createOscillator = require('./')
 const context = require('audio-context')()
 const createBuffer = require('audio-buffer-from')
 const createPanel = require('settings-panel')
-const createWaveform = require('../../gl-waveform')
+const createWaveform = require('gl-waveform')
 
 //rendering
 let wf = createWaveform({palette: ['white', 'black']})
@@ -17,13 +17,13 @@ let panel = createPanel([
 	{id: 'type', type: 'switch', values:[]},
 	{id: 'frequency', type: 'range', value: 440, min: 20, max: 16000, log: true},
 	{id: 'detune', type: 'range', value: 0, min: -100, max: 100, log: false},
-])
+], {style: `background: none`})
 
 //audio nodes
 let write = createWriter(context.destination)
 
 let osc = createOscillator({
-	type: 'saw',
+	type: 'clausen',
 	frequency: ctx => panel.state.frequency,
 	detune: ctx => panel.state.detune
 })
