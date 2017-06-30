@@ -4,7 +4,7 @@
   "description": "Oscillate periodic wave to stream",
   "main": "index.js",
   "dependencies": {
-    "audio-buffer-utils": "^4.0.1",
+    "audio-buffer-utils": "^5.0.0",
     "audio-through": "^2.1.0",
     "inherits": "^2.0.1"
   },
