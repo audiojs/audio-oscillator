@@ -213,26 +213,41 @@ t('function params', t => {
 t('function type', t => {
 	let osc = createOscillator({
 		type: ctx => {
-			return t % 0.5
+			return ctx.t
 		},
-		frequency: ctx => ctx.t,
-		dtype: 'int8'
+		frequency: ctx => ctx.sampleRate/4,
+		dtype: 'array'
 	})
+
+	let arr = osc(8)
+	t.deepEqual(arr, [0, .25, .5, .75, 0, .25, .5, .75])
 
 	t.end()
 })
 
 t('pass params', t => {
+	let osc = createOscillator({
+		type: ctx => ctx.a,
+		dtype: 'array'
+	})
 
-	t.end()
-})
-
-t('pass frequency in format', t => {
+	let arr = osc(4, {a: 1})
+	t.deepEqual(arr, [1,1,1,1])
 
 	t.end()
 })
 
 t('multichannel data', t => {
+	let osc = createOscillator({
+		channels: 3,
+		dtype: 'int8 interleaved',
+		sampleRate: 10000,
+		frequency: ctx => ctx.sampleRate/4
+	})
+
+	let arr = osc(4)
+
+	t.deepEqual(arr, [0,0,0, 127,127,127, 0,0,0, -128,-128,-128])
 
 	t.end()
 })
@@ -244,19 +259,7 @@ t('Output float32 arrays', t => {
 		channels: 2
 	})
 	let samples = sine(1024) //samples.length == 2048
-	t.end()
-})
 
-t('Change params dynamically', t => {
-	let tri = createOscillator({
-		type: 'triangle',
-		frequency: (t, ctx) => t/100,
-		sampleRate: 8000,
-		dtype: 'uint8'
-	})
-
-	let arr0 = tri(1024, {ratio: .3})
-	let arr1 = tri(1024, {ratio: .4})
-	let arr2 = tri(1024, {ratio: .5})
+	t.equal(samples.length, 2048)
 	t.end()
 })

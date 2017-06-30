@@ -31,17 +31,17 @@ Creatie oscillator function based on the `options`.
 let sine = createOscillator({type: 'sine', frequency: 1000})
 let abuf = sine()
 
-// triangular oscillator with uint8 output data
-let tri = createOscillator({type: 'triangle', ratio: 0.2, dtype: 'uint8', frequency: 200})
-let uint8arr = tri()
+// triangular oscillator with plain array output
+let tri = createOscillator({type: 'triangle', ratio: 0.2, dtype: 'array', frequency: 200})
+let arr = tri()
 
 // stereo oscillations
 let rect = createOscillator({type: 'rect', channels: 2, frequency: 1000})
 let abuf2 = rect()
 
-// custom harmonics oscillations
-let timbre = createOscillator({type: 'series', real: [0, 1, 0, .5]})
-let abuf3 = timbre()
+// custom harmonics oscillations to uint8 output
+let timbre = createOscillator({type: 'series', real: [0, 1, 0, .5], dtype: 'uint8'})
+let uint8arr = timbre()
 
 // oscillator with dynamic params
 let seq = createOscillator({
@@ -57,12 +57,12 @@ let abuf4 = seq()
 
 | Property | Default | Meaning |
 |---|---|---|
-| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `ctx => val` signature. |
+| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or K-rate function with `ctx => val` signature. |
 | `frequency` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature. |
 | `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature. |
 | `sampleRate` | `44100` | Output data sample rate. |
 | `channels` | `1` | Output data number of channels. |
-| `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
+| `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
 
 #### Types
 
@@ -81,6 +81,7 @@ Some periodic functions may provide additional parameters, which can be passed t
 | `'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/step.png) | Step function on a sample set. | `samples=[...]` |
 | `'interpolate'` | ![interpolate](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/interpolate.png) | Interpolate function on a sample set. | `samples=[...]` |
 | `'noise'` | ![noise](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/noise.png) | Repeated noise fragment. |  |
+| `function` | ? | Custom generating function with `ctx => value` signature, called for every sample. | |
 
 #### A-rate params
 

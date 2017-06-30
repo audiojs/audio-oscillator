@@ -34,8 +34,8 @@ function createOscillator (options) {
 	if (!ctx.type) ctx.type = 'sine'
 	if (!ctx.frequency) ctx.frequency = 440
 	if (!ctx.detune) ctx.detune = 0
-	ctx.sampleRate = format.sampleRate = format.sampleRate || ctx.sampleRate || 44100
-	ctx.channels = format.channels = format.channels || ctx.channels || 1
+	ctx.sampleRate = format.sampleRate = ctx.sampleRate || format.sampleRate || 44100
+	ctx.channels = format.channels = ctx.channels || format.channels || 1
 
 	//registered a-rate params
 	let aParams = {}
@@ -111,8 +111,7 @@ function createOscillator (options) {
 
 		//take over new passed params
 		if (params) {
-			if (params.frequency) ctx.frequency = params.frequency
-			if (params.detune) ctx.detune = params.detune
+			extend(ctx, params)
 			for (let name in aParams) {
 				if (params[name] !== undefined) aParam(name, params[name])
 			}
@@ -129,16 +128,15 @@ function createOscillator (options) {
 
 		let sampleRate = buf.sampleRate
 		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
-		let count = ctx.count
 
 		//fill channels
 		for (let c = 0, l = buf.length; c < buf.numberOfChannels; c++) {
 			let arr = buf.getChannelData(c)
 			for (let i = 0; i < l; i++) {
-				ctx.count++
-				ctx.time = (count + i) / sampleRate
-				ctx.t = ((count + i) % period) / period
+				ctx.time = (ctx.count) / sampleRate
+				ctx.t = ((ctx.count) % period) / period
 				arr[i] = generate(ctx)
+				ctx.count++
 			}
 		}
 
