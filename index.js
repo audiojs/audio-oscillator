@@ -88,6 +88,17 @@ function createOscillator (options) {
 			aParam('phase', 0)
 			generate = ctx => periodic.sine(ctx.t + ctx.phase)
 			break;
+		case 'step':
+		case 'samples':
+			aParam('samples', [0])
+			generate = ctx => periodic.step(ctx.t, ctx.samples)
+			break;
+		case 'inter':
+		case 'interpolate':
+		case 'values':
+			aParam('samples', [0])
+			generate = ctx => periodic.interpolate(ctx.t, ctx.samples)
+			break;
 		default:
 			if (typeof ctx.type === 'string') {
 				let fn = periodic[ctx.type]
