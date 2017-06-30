@@ -135,9 +135,13 @@ function createOscillator (options) {
 		let frequency = ctx.frequency.call ? ctx.frequency(ctx) : ctx.frequency
 		let detune = ctx.detune.call ? ctx.detune(ctx) : ctx.detune
 
+		assert(frequency != null, 'Frequency has bad value')
+		assert(detune != null, 'Detune has bad value')
+
 		for (let name in aParams) {
 			let p = aParams[name]
 			ctx[name] = p && p.call ? p(ctx) : p
+			assert(ctx[name] != null, name + ' has bad value')
 		}
 
 		let sampleRate = buf.sampleRate
