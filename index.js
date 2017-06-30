@@ -36,9 +36,9 @@ function createOscillator (options) {
 	ctx.channels = format.channels = options.channels || format.channels || 1
 
 	//register a-rate param
-	let aParams = {}, reserved = {t: true, time: true, count: true, type: true}
+	let aParams = {}, reserved = Object.keys(ctx)
 	function aParam (name, opts, dflt) {
-		if (reserved[name]) return
+		if (reserved.indexOf(name) >= 0) return
 		let val = opts[name] !== undefined ? opts[name] : dflt
 		aParams[name] = val
 	}
@@ -110,8 +110,8 @@ function createOscillator (options) {
 
 	assert(generate, 'Unrecognized type of function')
 
-	return oscillate
 
+	let lastPeriod, adjust = 0
 
 	//fill passed source with oscillated data
 	function oscillate (dst, params) {
@@ -143,8 +143,11 @@ function createOscillator (options) {
 		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
 
 		//correct phase change
-		if (period != ctx.period) {
-
+		if (period != lastPeriod) {
+			if (lastPeriod) {
+				adjust = ctx.t - (ctx.count % period) / period
+			}
+			lastPeriod = period
 		}
 
 		//fill channels
@@ -152,7 +155,7 @@ function createOscillator (options) {
 			let arr = buf.getChannelData(c)
 			for (let i = 0; i < l; i++) {
 				ctx.time = (ctx.count) / sampleRate
-				ctx.t = (ctx.count % period) / period
+				ctx.t = (ctx.count % period) / period + adjust
 				arr[i] = generate(ctx)
 				ctx.count++
 			}
@@ -163,5 +166,7 @@ function createOscillator (options) {
 		if (dst.length) return convert(buf, format, dst)
 		return convert(buf, format)
 	}
+
+	return oscillate
 }
 

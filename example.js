@@ -7,8 +7,10 @@ const createOscillator = require('./')
 const context = require('audio-context')()
 const createBuffer = require('audio-buffer-from')
 const createPanel = require('settings-panel')
+const createWaveform = require('../../gl-waveform')
 
-
+//rendering
+let wf = createWaveform({palette: ['white', 'black']})
 
 //settings
 let panel = createPanel([
@@ -21,7 +23,7 @@ let panel = createPanel([
 let write = createWriter(context.destination)
 
 let osc = createOscillator({
-	type: 'sine',
+	type: 'saw',
 	frequency: ctx => panel.state.frequency,
 	detune: ctx => panel.state.detune
 })
@@ -33,6 +35,10 @@ let count = 0;
 (function tick(err) {
 	if (err) throw err
 	count += 1024
-	// if (count > 44100*5) return write(null)
+	if (count > 44100*5) return write(null)
+	let last = buf.getChannelData(0).subarray(-1)[0]
 	write(osc(buf), tick)
+
+	wf.push(buf.getChannelData(0))
+	// console.log(last - buf.getChannelData(0).subarray(0,1)[0])
 })()
