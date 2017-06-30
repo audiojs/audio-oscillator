@@ -7,9 +7,8 @@
     "audio-buffer-from": "^1.0.2",
     "audio-format": "^2.0.0",
     "is-audio-buffer": "^1.0.11",
-    "object-assign": "^4.1.1",
     "pcm-convert": "^1.4.0",
-    "periodic-function": "^1.1.1"
+    "periodic-function": "^1.1.4"
   },
   "devDependencies": {
     "audio-context": "^1.0.1",

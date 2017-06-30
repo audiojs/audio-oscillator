@@ -9,7 +9,6 @@ const aformat = require('audio-format')
 const createBuffer = require('audio-buffer-from')
 const isAudioBuffer = require('is-audio-buffer')
 const assert = require('assert')
-const extend = require('object-assign')
 
 module.exports = createOscillator
 
@@ -112,7 +111,6 @@ function createOscillator (options) {
 	assert(generate, 'Unrecognized type of function')
 
 
-	let lastPeriod
 
 	//fill passed source with oscillated data
 	function oscillate (dst, params) {
