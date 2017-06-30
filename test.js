@@ -178,8 +178,8 @@ t('fourier series', function (t) {
 	t.deepEqual(arr, sin)
 
 
-	let sin1 = oscSin(4, {phase: 0})
-	let sin2 = oscSin(4, {frequency: 44100/2, phase: 0})
+	let sin1 = oscSin(4, {phase: 0, t: 0})
+	let sin2 = oscSin(4, {frequency: 44100/2, t: 0})
 	sin1 = sin1.map((v, i) => (v + sin2[i])/2 )
 	let arr2 = series(4, {real: null, imag: [0, 1, 1]})
 
@@ -199,7 +199,7 @@ t('detune', function (t) {
 
 	t.deepEqual(arr, [0, 127, 0, -128, 0, 127, 0, -128])
 
-	osc(arr, {detune: -1200})
+	osc(arr, {detune: -1200, t: 0})
 
 	t.deepEqual(arr, [0,89,127,89,0,-90,-128,-90])
 
@@ -219,7 +219,11 @@ t('function params', t => {
 	t.deepEqual(arr, [255, 0, 255, 0, 255, 0, 255, 0])
 
 	osc(arr)
-	t.deepEqual(arr, [0, 63, 127, 191, 0, 63, 127, 191])
+	//non-adjusted
+	// t.deepEqual(arr, [0, 63, 127, 191, 0, 63, 127, 191])
+
+	//adjusted
+	t.deepEqual(arr, [127, 191, 0, 63, 127, 191, 0, 63])
 
 	t.end()
 })

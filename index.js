@@ -29,7 +29,9 @@ function createOscillator (options) {
 		type: options.type || 'sine',
 		count: 0,
 		time: 0,
-		t: 0
+		t: 0,
+		adjust: 0,
+		period: 0
 	}
 
 	ctx.sampleRate = format.sampleRate = options.sampleRate || format.sampleRate || 44100
@@ -38,7 +40,6 @@ function createOscillator (options) {
 	//register a-rate param
 	let aParams = {}, reserved = Object.keys(ctx)
 	function aParam (name, opts, dflt) {
-		if (reserved.indexOf(name) >= 0) return
 		let val = opts[name] !== undefined ? opts[name] : dflt
 		aParams[name] = val
 	}
@@ -111,7 +112,7 @@ function createOscillator (options) {
 	assert(generate, 'Unrecognized type of function')
 
 
-	let lastPeriod, adjust = 0
+	let lastPeriod
 
 	//fill passed source with oscillated data
 	function oscillate (dst, params) {
@@ -127,7 +128,12 @@ function createOscillator (options) {
 		//take over new passed params
 		if (params) {
 			for (let name in params) {
-				aParam(name, params, ctx[name])
+				if (reserved.indexOf(name) >= 0) {
+					ctx[name] = params[name]
+				}
+				else {
+					aParam(name, params, ctx[name])
+				}
 			}
 		}
 
@@ -142,12 +148,12 @@ function createOscillator (options) {
 		let sampleRate = buf.sampleRate
 		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
 
-		//correct phase change
-		if (period != lastPeriod) {
-			if (lastPeriod) {
-				adjust = ctx.t - (ctx.count % period) / period
+		//correct freq/detune change
+		if (period != ctx.period) {
+			if (ctx.period) {
+				ctx.adjust = ctx.t - (ctx.count % period) / period
 			}
-			lastPeriod = period
+			ctx.period = period
 		}
 
 		//fill channels
@@ -155,7 +161,7 @@ function createOscillator (options) {
 			let arr = buf.getChannelData(c)
 			for (let i = 0; i < l; i++) {
 				ctx.time = (ctx.count) / sampleRate
-				ctx.t = (ctx.count % period) / period + adjust
+				ctx.t = (ctx.count % period) / period + ctx.adjust
 				arr[i] = generate(ctx)
 				ctx.count++
 			}
