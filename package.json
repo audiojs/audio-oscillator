@@ -12,6 +12,7 @@
     "periodic-function": "^1.1.1"
   },
   "devDependencies": {
+    "audio-context": "^1.0.1",
     "tape": "^4.6.3",
     "web-audio-write": "^1.2.1"
   },

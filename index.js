@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const periodic = require('periodic-function')
+const periodic = require('../../periodic-function')
 const convert = require('pcm-convert')
 const aformat = require('audio-format')
 const createBuffer = require('audio-buffer-from')
@@ -89,7 +89,10 @@ function createOscillator (options) {
 			generate = ctx => periodic.sine(ctx.t + ctx.phase)
 			break;
 		default:
-			if (typeof ctx.type === 'string') generate = periodic[ctx.type]
+			if (typeof ctx.type === 'string') {
+				let fn = periodic[ctx.type]
+				generate = ctx => fn(ctx.t)
+			}
 			else generate = ctx.type
 	}
 

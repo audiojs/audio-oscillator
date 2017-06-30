@@ -146,6 +146,18 @@ t('Saw', function (t) {
 	t.end()
 });
 
+t('clausen', t => {
+	let osc = createOscillator({
+		type: 'clausen',
+		dtype: 'uint8'
+	})
+
+	let arr = osc(8)
+	t.deepEqual(arr, [127,150,172,190,205,216,224,230])
+
+	t.end()
+})
+
 t('fourier series', function (t) {
 	let osc = createOscillator({
 		type: 'series',
