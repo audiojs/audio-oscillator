@@ -60,7 +60,6 @@ let abuf4 = seq()
 | `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or K-rate function with `ctx => val` signature. |
 | `frequency` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature. |
 | `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature. |
-| `smoothing` | `.5` | Smooth frequency/detune change transition. |
 | `sampleRate` | `44100` | Output data sample rate. |
 | `channels` | `1` | Output data number of channels. |
 | `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
