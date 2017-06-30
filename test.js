@@ -192,22 +192,33 @@ t('detune', function (t) {
 	t.end()
 });
 
-t.skip('function params', t => {
+t('function params', t => {
 	let osc = createOscillator({
 		type: 'tri',
 		dtype: 'uint8',
 		sampleRate: 8000,
-		ratio: (time, ctx) => ctx.count ? 0 : .5,
-		frequency: (time, ctx) => ctx.count ? ctx.sampleRate/4 : ctx.sampleRate/8
+		ratio: ctx => ctx.count ? 0 : .5,
+		frequency: ctx => ctx.count ? ctx.sampleRate/4 : ctx.sampleRate/2
 	})
 
 	let arr = osc(8)
-	console.log(arr)
+	t.deepEqual(arr, [255, 0, 255, 0, 255, 0, 255, 0])
+
+	osc(arr)
+	t.deepEqual(arr, [0, 63, 127, 191, 0, 63, 127, 191])
 
 	t.end()
 })
 
 t('function type', t => {
+	let osc = createOscillator({
+		type: ctx => {
+			return t % 0.5
+		},
+		frequency: ctx => ctx.t,
+		dtype: 'int8'
+	})
+
 	t.end()
 })
 

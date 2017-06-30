@@ -57,9 +57,9 @@ let abuf4 = seq()
 
 | Property | Default | Meaning |
 |---|---|---|
-| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `(t, ctx) => val` signature. |
-| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `(time, ctx) => freq` signature. |
-| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `(time, ctx) => detune` signature. |
+| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or function with `ctx => val` signature. |
+| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature. |
+| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature. |
 | `sampleRate` | `44100` | Output data sample rate. |
 | `channels` | `1` | Output data number of channels. |
 | `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
@@ -84,7 +84,7 @@ Some periodic functions may provide additional parameters, which can be passed t
 
 #### A-rate params
 
-If parameters are functions, they are evaluated every `oscillate` call with `(t, ctx)` arguments and expected to return a plain value. `ctx` is an object with the following properties:
+If parameters are functions, they are evaluated every `oscillate` call with `ctx` argument and expected to return a plain value. `ctx` is an object with the following properties:
 
 | Property | Meaning |
 |---|---|
