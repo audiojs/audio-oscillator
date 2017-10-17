@@ -6,6 +6,7 @@
   "dependencies": {
     "audio-buffer-from": "^1.0.2",
     "audio-format": "^2.0.0",
+    "defined": "^1.0.0",
     "is-audio-buffer": "^1.0.11",
     "pcm-convert": "^1.4.0",
     "periodic-function": "^1.1.4"

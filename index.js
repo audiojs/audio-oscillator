@@ -9,6 +9,7 @@ const aformat = require('audio-format')
 const createBuffer = require('audio-buffer-from')
 const isAudioBuffer = require('is-audio-buffer')
 const assert = require('assert')
+const defined = require('defined')
 
 module.exports = createOscillator
 
@@ -19,13 +20,13 @@ module.exports = createOscillator
 function createOscillator (options) {
 	if (!options) options = {}
 
-	let format = options.dtype || 'audiobuffer'
+	let format = defined(options.dtype, options.dataType, 'audiobuffer')
 
 	format = typeof format === 'string' ? aformat.parse(format) : aformat.detect(format)
 
 	//oscillating context
 	let ctx = {
-		type: options.type || 'sine',
+		type: defined(options.type, 'sine'),
 		count: 0,
 		time: 0,
 		t: 0,
@@ -33,25 +34,22 @@ function createOscillator (options) {
 		period: 0
 	}
 
-	ctx.sampleRate = format.sampleRate = options.sampleRate || format.sampleRate || 44100
-	ctx.channels = format.channels = options.channels || format.channels || 1
+	ctx.sampleRate = format.sampleRate = defined(options.sampleRate, options.rate, format.sampleRate, 44100)
+	ctx.channels = format.channels = defined(options.channels, format.channels, 1)
+	ctx.samplesPerFrame = defined(options.length, options.samplesPerFrame, options.frame, options.block, options.samplesPerFrame, options.blockLength, options.frameSize, options.frameLength, 1024)
 
 	//register a-rate param
-	let aParams = {}, reserved = Object.keys(ctx)
-	function aParam (name, opts, dflt) {
-		let val = opts[name] !== undefined ? opts[name] : dflt
-		aParams[name] = val
-	}
+	let aParams = {}, reservedName = Object.keys(ctx)
 
-	aParam('frequency', options, 440)
-	aParam('detune', options, 0)
+	aParams.frequency = defined(options.f, options.freq, options.frequency, 440)
+	aParams.detune = defined(options.detune, 0)
 
 	//figure out generator function
 	let generate
 	switch (ctx.type) {
 		case 'saw':
 		case 'sawtooth':
-			aParam('inversed', options, false)
+			aParams.inversed = defined(options.inversed, options.inverse, false)
 			generate = ctx => periodic.sawtooth(ctx.t, ctx.inversed)
 			break;
 		case 'delta':
@@ -60,44 +58,44 @@ function createOscillator (options) {
 			break;
 		case 'tri':
 		case 'triangle':
-			aParam('ratio', options, 0.5)
+			aParams.ratio = defined(options.ratio, 0.5)
 			generate = ctx => periodic.triangle(ctx.t, ctx.ratio)
 			break;
 		case 'square':
 		case 'quad':
 		case 'rect':
 		case 'rectangle':
-			aParam('ratio', options, 0.5)
+			aParams.ratio = defined(options.ratio, 0.5)
 			generate = ctx => periodic.square(ctx.t, ctx.ratio)
 			break;
 		case 'series':
 		case 'periodic':
 		case 'harmonics':
 		case 'fourier':
-			aParam('real', options, [0, 1])
-			aParam('imag', options, null)
-			aParam('normalize', options, true)
+			aParams.real = defined(options.real, [0, 1])
+			aParams.imag = defined(options.imag, options.imaginary, null)
+			aParams.normalize = defined(options.normalize, true)
 			generate = ctx => periodic.fourier(ctx.t, ctx.real, ctx.imag, ctx.normalize)
 			break;
 		case 'cos':
 		case 'cosine':
-			aParam('phase', options, 0)
+			aParams.phase = defined(options.phase, options.shift, 0)
 			generate = ctx => periodic.sine(ctx.t + ctx.phase + .25)
 			break;
 		case 'sin':
 		case 'sine':
-			aParam('phase', options, 0)
+			aParams.phase = defined(options.phase, options.shift, 0)
 			generate = ctx => periodic.sine(ctx.t + ctx.phase)
 			break;
 		case 'step':
 		case 'samples':
-			aParam('samples', options, [0])
+			aParams.samples = defined(options.samples, [0])
 			generate = ctx => periodic.step(ctx.t, ctx.samples)
 			break;
 		case 'inter':
 		case 'interpolate':
 		case 'values':
-			aParam('samples', options, [0])
+			aParams.samples = defined(options.samples, [0])
 			generate = ctx => periodic.interpolate(ctx.t, ctx.samples)
 			break;
 		case 'clausen':
@@ -118,7 +116,7 @@ function createOscillator (options) {
 	function oscillate (dst, params) {
 		let buf = dst
 
-		if (buf == null) buf = 1024
+		if (buf == null) buf = ctx.samplesPerFrame
 
 		//make sure we deal with audio buffer
 		if (!isAudioBuffer(buf)) {
@@ -128,11 +126,11 @@ function createOscillator (options) {
 		//take over new passed params
 		if (params) {
 			for (let name in params) {
-				if (reserved.indexOf(name) >= 0) {
+				if (reservedName.indexOf(name) >= 0) {
 					ctx[name] = params[name]
 				}
 				else {
-					aParam(name, params, ctx[name])
+					aParams[name] = defined(params[name], ctx[name])
 				}
 			}
 		}
@@ -158,7 +156,7 @@ function createOscillator (options) {
 
 		//fill channels
 		let data = [], cnum = buf.numberOfChannels
-		for (let c = 0, l = buf.length; c < cnum; c++) {
+		for (let c = 0; c < cnum; c++) {
 			data[c] = buf.getChannelData(c)
 		}
 		for (let i = 0, l = buf.length; i < l; i++) {

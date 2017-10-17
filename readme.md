@@ -20,9 +20,7 @@ let output = createSpeaker()
 })()
 ```
 
-## API
-
-### oscillate = createOscillator(options?)
+### createOscillator(options?)
 
 Creatie oscillator function based on the `options`.
 
@@ -58,11 +56,12 @@ let abuf4 = seq()
 | Property | Default | Meaning |
 |---|---|---|
 | `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or K-rate function with `ctx => val` signature. |
-| `frequency` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature. |
+| `frequency`, `freq`, `f` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature. |
 | `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature. |
-| `sampleRate` | `44100` | Output data sample rate. |
-| `channels` | `1` | Output data number of channels. |
+| `sampleRate`, `rate` | `44100` | Output data sample rate. |
+| `channels`, `numberOfChannels` | `1` | Output data number of channels. |
 | `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
+| `length`, `frameSize`, `samplesPerFrame` | `1024` | Default length of the block.
 
 #### Types
 
@@ -99,7 +98,7 @@ If parameters are functions, they are evaluated every `oscillate` call with `ctx
 | `type` | Current type of generator. |
 | `...params` | Custom params for generator function. |
 
-### buffer = oscillate(buffer|length=1024, options?)
+### `oscillate(buffer|length=1024, options?)`
 
 Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
 
