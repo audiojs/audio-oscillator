@@ -8,7 +8,6 @@ const convert = require('pcm-convert')
 const aformat = require('audio-format')
 const createBuffer = require('audio-buffer-from')
 const isAudioBuffer = require('is-audio-buffer')
-const assert = require('assert')
 const defined = require('defined')
 
 module.exports = createOscillator
@@ -20,7 +19,7 @@ module.exports = createOscillator
 function createOscillator (options) {
 	if (!options) options = {}
 
-	let format = defined(options.dtype, options.dataType, 'audiobuffer')
+	let format = defined(options.format, options.dtype, options.container, 'array')
 
 	format = typeof format === 'string' ? aformat.parse(format) : aformat.detect(format)
 
@@ -108,8 +107,6 @@ function createOscillator (options) {
 			else generate = ctx.type
 	}
 
-	assert(generate, 'Unrecognized type of function')
-
 
 
 	//fill passed source with oscillated data
@@ -170,7 +167,7 @@ function createOscillator (options) {
 
 		//convert to target dtype
 		if (format.type === 'audiobuffer') return buf
-		if (dst.length) return convert(buf, format, dst)
+		if (dst && dst.length) return convert(buf, format, dst)
 		return convert(buf, format)
 	}
 

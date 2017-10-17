@@ -6,7 +6,7 @@ var createBuffer = require('audio-buffer-from')
 var to = require('pcm-convert')
 
 t('No buffer case', t => {
-	let oscillate = createOscillator()
+	let oscillate = createOscillator({format: 'audiobuffer'})
 
 	let buf = oscillate()
 

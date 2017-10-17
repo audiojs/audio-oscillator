@@ -27,18 +27,18 @@ Create oscillator function based on the `options`.
 ```js
 // simple sine oscillator
 let sine = createOscillator({type: 'sine', frequency: 1000})
-let abuf = sine()
+let arr = sine()
 
 // triangular oscillator with plain array output
-let tri = createOscillator({type: 'triangle', ratio: 0.2, dtype: 'array', frequency: 200})
-let arr = tri()
+let tri = createOscillator({type: 'triangle', ratio: 0.2, frequency: 200})
+let arr2 = tri()
 
 // stereo oscillations
-let rect = createOscillator({type: 'rect', channels: 2, frequency: 1000})
-let abuf2 = rect()
+let rect = createOscillator({type: 'rect', channels: 2, format: 'audiobuffer', frequency: 1000})
+let abuf = rect()
 
 // custom harmonics oscillations to uint8 output
-let timbre = createOscillator({type: 'series', real: [0, 1, 0, .5], dtype: 'uint8'})
+let timbre = createOscillator({type: 'series', real: [0, 1, 0, .5], format: 'uint8'})
 let uint8arr = timbre()
 
 // oscillator with dynamic params
@@ -60,7 +60,7 @@ let abuf4 = seq()
 | `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature. |
 | `sampleRate`, `rate` | `44100` | Output data sample rate. |
 | `channels`, `numberOfChannels` | `1` | Output data number of channels. |
-| `dtype` | `'audiobuffer'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'` etc. See [audio-format](https://github.com/audiojs/audio-format). |
+| `format`, `dtype` | `'float32'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'`, `'audiobuffer'` etc. See [pcm-convert](https://github.com/audiojs/pcm-convert) and [audio-format](https://github.com/audiojs/audio-format) for list of available formats. |
 | `length`, `frameSize`, `samplesPerFrame` | `1024` | Default length of the block.
 
 #### Types
@@ -106,7 +106,7 @@ Fill passed audio buffer/array or create a new one of the `length` with oscillat
 // Output float32 interleaved arrays
 let sine = createOscillator({
   type: 'sine',
-  dtype: 'float32 interleaved',
+  format: 'float32 interleaved',
   channels: 4,
   sampleRate: 96000
 })
@@ -118,7 +118,7 @@ let tri = createOscillator({
   type: 'triangle',
   frequency: 1000,
   sampleRate: 8000,
-  dtype: 'uint8'
+  format: 'uint8'
 })
 let arr = new Uint8Array(1024)
 tri(arr, {ratio: .3})
