@@ -20,7 +20,7 @@ let output = createSpeaker()
 })()
 ```
 
-### createOscillator(options?)
+### `createOscillator(options?)`
 
 Creatie oscillator function based on the `options`.
 
@@ -98,7 +98,7 @@ If parameters are functions, they are evaluated every `oscillate` call with `ctx
 | `type` | Current type of generator. |
 | `...params` | Custom params for generator function. |
 
-### `oscillate(buffer|length=1024, options?)`
+### `oscillate(buffer|length, options?)`
 
 Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
 
