@@ -22,7 +22,7 @@ let output = createSpeaker()
 
 ### `createOscillator(options?)`
 
-Creatie oscillator function based on the `options`.
+Create oscillator function based on the `options`.
 
 ```js
 // simple sine oscillator
