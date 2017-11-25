@@ -7,15 +7,14 @@ Fill array/buffer with periodic oscillation.
 [![$ npm install audio-oscillator](http://nodei.co/npm/audio-oscillator.png?mini=true)](http://npmjs.org/package/audio-oscillator)
 
 ```js
-var createOscillator = require('audio-oscillator');
-var createSpeaker = require('audio-speaker');
+var createOscillator = require('audio-oscillator')
+var output = require('audio-speaker')()
 
 let oscillate = createOscillator({frequency: 440, type: 'saw'})
-let output = createSpeaker()
 
 // output oscillated sawtooth wave to speaker
 (function tick(error) {
-  let audioBuffer = oscillate(1024)
+  let audioBuffer = oscillate()
   output(audioBuffer, tick)
 })()
 ```
@@ -51,7 +50,7 @@ let seq = createOscillator({
 let abuf4 = seq()
 ```
 
-#### Options
+#### `options`
 
 | Property | Default | Meaning |
 |---|---|---|
@@ -63,7 +62,7 @@ let abuf4 = seq()
 | `format`, `dtype` | `'float32'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'`, `'audiobuffer'` etc. See [pcm-convert](https://github.com/audiojs/pcm-convert) and [audio-format](https://github.com/audiojs/audio-format) for list of available formats. |
 | `length`, `frameSize`, `samplesPerFrame` | `1024` | Default length of the block.
 
-#### Types
+#### `options.type`
 
 Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature.
 
@@ -98,9 +97,9 @@ If parameters are functions, they are evaluated every `oscillate` call with `ctx
 | `type` | Current type of generator. |
 | `...params` | Custom params for generator function. |
 
-### `oscillate(buffer|length, options?)`
+### `oscillate(target|length, options?)`
 
-Fill passed audio buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
+Fill passed audio-buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
 
 ```js
 // Output float32 interleaved arrays
@@ -111,7 +110,6 @@ let sine = createOscillator({
   sampleRate: 96000
 })
 let samples = sine(1024) //samples.length == 8192
-
 
 // Change params dynamically
 let tri = createOscillator({
@@ -129,11 +127,12 @@ tri(arr, {ratio: .5})
 
 ## Related
 
-* [audio-generator](https://github.com/audiojs/audio-generator) − generate audio with a function.<br/>
-* [audio-speaker](https://github.com/audiojs/audio-speaker) − output audio to speaker in node/browser.<br/>
-* [web-audio-write](https://github.com/audiojs/web-audio-write) − write to web-audio node.<br/>
-* [periodic-function](https://github.com/dfcreative/periodic-function) − a collection of periodic functions.<br/>
+* [audio-generator](https://github.com/audiojs/audio-generator) − generate audio with a function.
+* [audio-speaker](https://github.com/audiojs/audio-speaker) − output audio to speaker in node/browser.
+* [web-audio-write](https://github.com/audiojs/web-audio-write) − write to web-audio node.
+* [periodic-function](https://github.com/scijs/periodic-function) − a collection of periodic functions.
+* [audio-formant](https://github.com/audiojs/audio-formant) − generate gaussian mixture based audio waveform.
 
 ## License
 
-© 2017 Dima Yv. MIT License
+© 2017 Dmitry Yv. MIT License
