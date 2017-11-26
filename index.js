@@ -3,198 +3,146 @@
  */
 'use strict';
 
+const through = require('audio-through')
 const periodic = require('periodic-function')
-const convert = require('pcm-convert')
-const aformat = require('audio-format')
-const createBuffer = require('audio-buffer-from')
-const isAudioBuffer = require('is-audio-buffer')
 const defined = require('defined')
 const pick = require('pick-by-alias')
+const extend = require('object-assign')
 
 module.exports = createOscillator
 
 
-/**
- * @constructor
- */
 function createOscillator (options) {
 	if (!options) options = {}
 
-	options = unalias(options)
+	// register a-rate param
+	let param = {
+		frequency: 432,
+		detune: 0,
+		type: 'sin'
+	}, generate
 
-	let format = defined(options.format, 'array')
+	// fill passed source with oscillated data
+	let oscillate = through((data, state, opts) => {
+		if (opts) update(opts)
 
-	format = typeof format === 'string' ? aformat.parse(format) : aformat.detect(format)
-
-	//oscillating context
-	let state = {
-		type: defined(options.type, 'sine'),
-		count: 0,
-		time: 0,
-		t: 0,
-		adjust: 0,
-		period: 0
-	}
-
-	state.sampleRate = format.sampleRate = defined(options.sampleRate, format.sampleRate, 44100)
-	state.channels = format.channels = defined(options.channels, format.channels, 1)
-	state.samplesPerFrame = defined(options.length, 1024)
-
-	//register a-rate param
-	let aParams = {}, reservedName = Object.keys(state)
-
-	aParams.frequency = defined(options.frequency, 440)
-	aParams.detune = defined(options.detune, 0)
-
-	//figure out generator function
-	let generate
-	switch (state.type) {
-		case 'saw':
-		case 'sawtooth':
-			aParams.inverse = defined(options.inverse, false)
-			generate = state => periodic.sawtooth(state.t, state.inverse)
-			break;
-		case 'delta':
-		case 'pulse':
-			generate = state => periodic.pulse(state.t)
-			break;
-		case 'tri':
-		case 'triangle':
-			aParams.ratio = defined(options.ratio, 0.5)
-			generate = state => periodic.triangle(state.t, state.ratio)
-			break;
-		case 'square':
-		case 'quad':
-		case 'rect':
-		case 'rectangle':
-			aParams.ratio = defined(options.ratio, 0.5)
-			generate = state => periodic.square(state.t, state.ratio)
-			break;
-		case 'series':
-		case 'periodic':
-		case 'harmonics':
-		case 'fourier':
-			aParams.real = defined(options.real, [0, 1])
-			aParams.imag = defined(options.imag, null)
-			aParams.normalize = defined(options.normalize, true)
-			generate = state => periodic.fourier(state.t, state.real, state.imag, state.normalize)
-			break;
-		case 'cos':
-		case 'cosine':
-			aParams.phase = defined(options.phase, 0)
-			generate = state => periodic.sine(state.t + state.phase + .25)
-			break;
-		case 'sin':
-		case 'sine':
-			aParams.phase = defined(options.phase, 0)
-			generate = state => periodic.sine(state.t + state.phase)
-			break;
-		case 'step':
-		case 'samples':
-			aParams.samples = defined(options.samples, [0])
-			generate = state => periodic.step(state.t, state.samples)
-			break;
-		case 'inter':
-		case 'interpolate':
-		case 'values':
-			aParams.samples = defined(options.samples, [0])
-			generate = state => periodic.interpolate(state.t, state.samples)
-			break;
-		case 'clausen':
-
-		default:
-			if (typeof state.type === 'string') {
-				let fn = periodic[state.type]
-				generate = state => fn(state.t)
-			}
-			else generate = state.type
-	}
-
-
-
-	//fill passed source with oscillated data
-	function oscillate (dst, params) {
-		let buf = dst
-
-		if (buf == null) buf = state.samplesPerFrame
-
-		//make sure we deal with audio buffer
-		if (!isAudioBuffer(buf)) {
-			buf = createBuffer(buf, format)
-		}
-
-		//take over new passed params
-		if (params) {
-			params = unalias(params)
-
-			for (let name in params) {
-				if (reservedName.indexOf(name) >= 0) {
-					state[name] = params[name]
-				}
-				else {
-					aParams[name] = defined(params[name], state[name])
-				}
-			}
-		}
-
-		//evaluate context
-		for (let name in aParams) {
-			let p = aParams[name]
+		// evaluate a-params
+		for (let name in param) {
+			let p = param[name]
 			state[name] = p && p.call ? p(state) : p
 		}
 
-		let frequency = state.frequency
-		let detune = state.detune
-		let sampleRate = buf.sampleRate
+		let {frequency, detune, sampleRate, time} = state
 		let period = sampleRate / (frequency * Math.pow(2, detune / 1200))
 
-		//correct freq/detune change
-		if (period != state.period) {
-			if (state.period) {
-				state.adjust = state.t - (state.count % period) / period
+		// correct freq/detune change
+		if (period !== state.period) {
+			if (state.period != null) {
+				state.shift = state.t - (state.count % period) / period
+			}
+			else {
+				state.shift = 0
 			}
 			state.period = period
 		}
 
-		//fill channels
-		let data = [], cnum = buf.numberOfChannels
-		for (let c = 0; c < cnum; c++) {
-			data[c] = buf.getChannelData(c)
-		}
-		for (let i = 0, l = buf.length; i < l; i++) {
-			state.time = (state.count) / sampleRate
-			state.t = (state.count % period) / period + state.adjust
-			for (let c = 0; c < cnum; c++) {
+		// fill channels
+		let count = state.count
+		for (let i = 0, l = data[0].length; i < l; i++) {
+			state.t = (count % period) / period + state.shift
+			for (let c = 0, cnum = data.length; c < cnum; c++) {
 				data[c][i] = generate(state)
 			}
-			state.count++
+			count++
 		}
 
-		//convert to target dtype
-		if (format.type === 'audiobuffer') return buf
-		if (dst && dst.length) return convert(buf, format, dst)
-		return convert(buf, format)
+		return data
+	}, options)
+
+	oscillate.update = update
+	update(options)
+
+	function update (opts) {
+		opts = pick(opts, {
+			type: 'type waveform wave kind',
+			frequency: 'frequency freq f',
+			detune: 'detune',
+			inverse: 'inverse inversed',
+			imag: 'imag imaginary im',
+			real: 'real re',
+			normalize: 'normalize normalized',
+			phase: 'phase shift ψ φ',
+			ratio: 'ratio fraction',
+			samples: 'samples values steps'
+		}, true)
+
+		extend(param, opts)
+
+		// figure out generator function
+		switch (param.type) {
+			case 'saw':
+			case 'sawtooth':
+				param.inverse = defined(opts.inverse, param.inverse, false)
+				generate = state => periodic.sawtooth(state.t, state.inverse)
+				break;
+			case 'delta':
+			case 'pulse':
+				generate = state => periodic.pulse(state.t)
+				break;
+			case 'tri':
+			case 'triangle':
+				param.ratio = defined(opts.ratio, param.ratio, 0.5)
+				generate = state => periodic.triangle(state.t, state.ratio)
+				break;
+			case 'square':
+			case 'quad':
+			case 'rect':
+			case 'rectangle':
+				param.ratio = defined(opts.ratio, param.ratio, 0.5)
+				generate = state => periodic.square(state.t, state.ratio)
+				break;
+			case 'series':
+			case 'periodic':
+			case 'harmonics':
+			case 'fourier':
+				param.real = defined(opts.real, param.real, [0, 1])
+				param.imag = defined(opts.imag, param.imag, null)
+				param.normalize = defined(opts.normalize, param.normalize, true)
+				generate = state => periodic.fourier(state.t, state.real, state.imag, state.normalize)
+				break;
+			case 'cos':
+			case 'cosine':
+				param.phase = defined(opts.phase, param.phase, 0)
+				generate = state => periodic.sine(state.t + state.phase + .25)
+				break;
+			case 'sin':
+			case 'sine':
+			case 'sinus':
+				param.phase = defined(opts.phase, param.phase, 0)
+				generate = state => periodic.sine(state.t + state.phase)
+				break;
+			case 'step':
+			case 'samples':
+				param.samples = defined(opts.samples, param.samples, [0])
+				generate = state => periodic.step(state.t, state.samples)
+				break;
+			case 'inter':
+			case 'interpolate':
+			case 'values':
+				param.samples = defined(opts.samples, param.samples, [0])
+				generate = state => periodic.interpolate(state.t, state.samples)
+				break;
+			case 'clausen':
+				generate = state => periodic.clausen(state.t)
+				break;
+			default:
+				if (typeof type === 'string') {
+					let fn = periodic[type]
+					generate = state => fn(state.t)
+				}
+				else generate = param.type
+		}
 	}
 
 	return oscillate
-}
-
-function unalias(options) {
-	return pick(options, {
-		type: 'type waveform wave kind',
-		sampleRate: 'sampleRate rate',
-		channels: 'channels channel numberOfChannels',
-		samplesPerFrame: 'samplesPerFrame length frame block blockSize blockLength frameSize frameLength',
-		frequency: 'frequency freq f',
-		detune: 'detune',
-		inverse: 'inverse inversed',
-		imag: 'imag imaginary im',
-		real: 'real re',
-		normalize: 'normalize normalized',
-		phase: 'phase shift ψ',
-		ratio: 'ratio fraction',
-		samples: 'samples values steps',
-		format: 'dtype dataType format container',
-		t: 'time t'
-	}, true)
 }

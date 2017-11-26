@@ -23,7 +23,7 @@ let panel = createPanel([
 let write = createWriter(context.destination)
 
 let osc = createOscillator({
-	type: 'clausen',
+	type: 'sin',
 	frequency: ctx => panel.state.frequency,
 	detune: ctx => panel.state.detune
 })

@@ -153,7 +153,7 @@ t('clausen', t => {
 	})
 
 	let arr = osc(8)
-	t.deepEqual(arr, [127,150,172,190,205,216,224,230])
+	t.deepEqual(arr, [127,150,171,189,204,215,224,230])
 
 	t.end()
 })
