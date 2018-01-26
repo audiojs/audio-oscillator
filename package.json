@@ -1,6 +1,6 @@
 {
   "name": "audio-oscillator",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Oscillate periodic wave to buffer",
   "main": "index.js",
   "dependencies": {
