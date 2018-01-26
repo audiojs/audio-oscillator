@@ -33,7 +33,7 @@ let tri = createOscillator({type: 'triangle', ratio: 0.2, frequency: 200})
 let arr2 = tri()
 
 // stereo oscillations
-let rect = createOscillator({type: 'rect', channels: 2, format: 'audiobuffer', frequency: 1000})
+let rect = createOscillator({type: 'rect', format: 'stereo audiobuffer', frequency: 1000})
 let abuf = rect()
 
 // custom harmonics oscillations to uint8 output
@@ -52,15 +52,12 @@ let abuf4 = seq()
 
 #### `options`
 
-| Property | Default | Meaning |
-|---|---|---|
-| `type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or K-rate function with `ctx => val` signature. |
-| `frequency`, `freq`, `f` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature. |
-| `detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature. |
-| `sampleRate`, `rate` | `44100` | Output data sample rate. |
-| `channels`, `numberOfChannels` | `1` | Output data number of channels. |
-| `format`, `dtype` | `'float32'` | Output data format, eg. `'uint8 interleaved'`, `'float32 planar'`, `'array'`, `'audiobuffer'` etc. See [pcm-convert](https://github.com/audiojs/pcm-convert) and [audio-format](https://github.com/audiojs/audio-format) for list of available formats. |
-| `length`, `frameSize`, `samplesPerFrame` | `1024` | Default length of the block.
+Property | Default | Meaning
+---|---|---
+`type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or K-rate function with `ctx => val` signature.
+`frequency`, `freq`, `f` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature.
+`detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature.
+`format` | `'float32 mono'` | Output data format, eg. `'planar stereo array'`, `'5.1 audiobuffer 44100'` or an object with format properties. See [audio-format](https://github.com/audiojs/audio-format).
 
 #### `options.type`
 
@@ -92,12 +89,10 @@ If parameters are functions, they are evaluated every `oscillate` call with `ctx
 | `t` | Current amount of turn, `0..1`. |
 | `frequency` | Last frame frequency. |
 | `detune` | Last frame detune. |
-| `sampleRate` | Static value, sample rate. |
-| `channels` | Static value, channels. |
 | `type` | Current type of generator. |
 | `...params` | Custom params for generator function. |
 
-### `oscillate(target|length, options?)`
+### `oscillate(target|length=1024, options?)`
 
 Fill passed audio-buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
 

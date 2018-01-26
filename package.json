@@ -5,7 +5,8 @@
   "main": "index.js",
   "dependencies": {
     "audio-buffer-from": "^1.0.2",
-    "audio-format": "^2.0.0",
+    "audio-format": "^2.3.2",
+    "audio-through": "^4.0.0",
     "defined": "^1.0.0",
     "is-audio-buffer": "^1.0.11",
     "object-assign": "^4.1.1",

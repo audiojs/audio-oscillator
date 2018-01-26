@@ -22,6 +22,7 @@ function createOscillator (options) {
 		type: 'sin'
 	}, generate
 
+
 	// fill passed source with oscillated data
 	let oscillate = through((data, state, opts) => {
 		if (opts) update(opts)
@@ -51,7 +52,8 @@ function createOscillator (options) {
 		for (let i = 0, l = data[0].length; i < l; i++) {
 			state.t = (count % period) / period + state.shift
 			for (let c = 0, cnum = data.length; c < cnum; c++) {
-				data[c][i] = generate(state)
+				let sample = generate(state)
+				data[c][i] = sample
 			}
 			count++
 		}
@@ -62,6 +64,11 @@ function createOscillator (options) {
 	oscillate.update = update
 	update(options)
 
+
+	return oscillate
+
+
+	// update params
 	function update (opts) {
 		opts = pick(opts, {
 			type: 'type waveform wave kind',
@@ -143,6 +150,4 @@ function createOscillator (options) {
 				else generate = param.type
 		}
 	}
-
-	return oscillate
 }
