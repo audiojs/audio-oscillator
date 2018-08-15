@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "audio-context": "^1.0.1",
-    "gl-waveform": "^2.4.3",
+    "gl-waveform": "^4.0.0",
     "settings-panel": "^1.8.17",
     "tape": "^4.6.3",
     "web-audio-write": "^1.2.1"
