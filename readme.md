@@ -12,7 +12,7 @@ const output = require('web-audio-write')()
 
 // render sine sound stream
 ;(async function frame() {
-  await output(oscillate(new ArrayBuffer({
+  await output(oscillate(new AudioBuffer({
     channels: 2, sampleRate: 44100, length: 1024
   }), 440))
   frame()
