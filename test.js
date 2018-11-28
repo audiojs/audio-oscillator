@@ -248,3 +248,7 @@ t('Direct output', t => {
 
 	t.end()
 })
+
+
+t('changed detune/freq phase alignment')
+t('cos')

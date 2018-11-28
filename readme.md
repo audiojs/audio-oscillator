@@ -10,10 +10,11 @@ Generate periodic oscillation data.
 const oscillate = require('audio-oscillator/sine')
 const output = require('web-audio-write')()
 
+// render sine sound stream
 ;(async function frame() {
   await output(oscillate(new ArrayBuffer({
     channels: 2, sampleRate: 44100, length: 1024
-  }), {frequency: 440}))
+  }), 440))
   frame()
 })()
 ```
@@ -23,7 +24,7 @@ const output = require('web-audio-write')()
 
 ### `let array = oscillate.<waveform>(length=1024|dst, frequency=440|options?)`
 
-Generate [periodic-function](https://ghub.io/periodic-function) `waveform` samples into `dst` float array, list of arrays or AudioBuffer, based on `options`. If `length` is provided, a new mono `array` is created. The phase of consequently generated chunks is aligned.
+Generate [periodic-function](https://ghub.io/periodic-function) `waveform` samples into a `dst` float array / array of arrays / _AudioBuffer_. If `length` is provided, a new mono `array` is created. The phase of consequently generated chunks is aligned, if the same array is passed multiple times.
 
 ```js
 let oscillate = require('audio-oscillator')
@@ -45,7 +46,7 @@ Property | Default | Meaning
 ---|---|---
 `frequency`, `f` | `440` | Frequency of oscillations, in Hz.
 `detune` | `0` | Detune of oscillations `-100...+100`, in cents.
-`phase` | `0` | Normalized initial phase of waveform, `0..1`.
+`phase`, `t` | `0` | Normalized initial phase of waveform, `0..1`.
 `sampleRate`, `rate` | `44100` | Sample rate of output data.
 
 
@@ -62,6 +63,7 @@ Type | Waveshape | Parameters
 `'rect'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/square.png) | `ratio=0.5`
 `'series'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/fourier.png) | `real=[0, 1]`, `imag=[0, 0]`, `normalize=true`
 `'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/clausen.png) | `limit=10`
+`'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/step.png) | `samples=10`
 
 
 ## Related
