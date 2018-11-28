@@ -3,7 +3,7 @@
 'use strict'
 
 const createWriter = require('web-audio-write')
-const createOscillator = require('./')
+const osc = require('./')
 const context = require('audio-context')()
 const createBuffer = require('audio-buffer-from')
 const createPanel = require('settings-panel')
@@ -22,12 +22,6 @@ let panel = createPanel([
 //audio nodes
 let write = createWriter(context.destination)
 
-let osc = createOscillator({
-	type: 'sin',
-	frequency: ctx => panel.state.frequency,
-	detune: ctx => panel.state.detune
-})
-
 //output cycle
 let buf = createBuffer(1024, {context: context})
 let count = 0;
@@ -37,7 +31,7 @@ let count = 0;
 	count += 1024
 	if (count > 44100*5) return write(null)
 	let last = buf.getChannelData(0).subarray(-1)[0]
-	write(osc(buf), tick)
+	write(osc.sin(buf, {f: panel.state.frequency, detune: panel.state.detune}), tick)
 
 	wf.push(buf.getChannelData(0))
 	// console.log(last - buf.getChannelData(0).subarray(0,1)[0])

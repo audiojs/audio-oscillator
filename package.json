@@ -1,24 +1,18 @@
 {
   "name": "audio-oscillator",
   "version": "2.3.0",
-  "description": "Oscillate periodic wave to buffer",
+  "description": "Oscillate periodic wave to array",
   "main": "index.js",
   "dependencies": {
-    "audio-buffer-from": "^1.0.2",
-    "audio-format": "^2.3.2",
-    "audio-through": "^4.0.0",
-    "defined": "^1.0.0",
-    "is-audio-buffer": "^1.0.11",
-    "object-assign": "^4.1.1",
-    "pcm-convert": "^1.4.0",
-    "periodic-function": "^1.1.4",
-    "pick-by-alias": "^1.2.0"
+    "periodic-function": "^1.1.4"
   },
   "devDependencies": {
+    "audio-buffer-from": "^1.1.1",
     "audio-context": "^1.0.1",
     "gl-waveform": "^2.4.3",
+    "pcm-convert": "^1.6.5",
     "settings-panel": "^1.8.17",
-    "tape": "^4.6.3",
+    "tape": "^4.9.1",
     "web-audio-write": "^1.2.1"
   },
   "scripts": {

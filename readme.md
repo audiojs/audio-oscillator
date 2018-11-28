@@ -1,132 +1,72 @@
 # audio-oscillator [![Build Status](https://travis-ci.org/audiojs/audio-oscillator.svg?branch=master)](https://travis-ci.org/audiojs/audio-oscillator) [![unstable](https://img.shields.io/badge/stability-unstable-green.svg)](http://github.com/badges/stability-badges) [![Greenkeeper badge](https://badges.greenkeeper.io/audiojs/audio-oscillator.svg)](https://greenkeeper.io/)
 
-Fill array/buffer with periodic oscillation.
+Generate periodic oscillation data.
 
 ## Usage
 
 [![$ npm install audio-oscillator](http://nodei.co/npm/audio-oscillator.png?mini=true)](http://npmjs.org/package/audio-oscillator)
 
 ```js
-var createOscillator = require('audio-oscillator')
-var output = require('audio-speaker')()
+const oscillate = require('audio-oscillator/sine')
+const output = require('web-audio-write')()
 
-let oscillate = createOscillator({frequency: 440, type: 'saw'})
-
-// output oscillated sawtooth wave to speaker
-(function tick(error) {
-  let audioBuffer = oscillate()
-  output(audioBuffer, tick)
+;(async function frame() {
+  await output(oscillate(new ArrayBuffer({
+    channels: 2, sampleRate: 44100, length: 1024
+  }), {frequency: 440}))
+  frame()
 })()
 ```
 
-### `createOscillator(options?)`
 
-Create oscillator function based on the `options`.
+## API
+
+### `let array = oscillate.<waveform>(length=1024|dst, frequency=440|options?)`
+
+Generate [periodic-function](https://ghub.io/periodic-function) `waveform` samples into `dst` float array, list of arrays or AudioBuffer, based on `options`. If `length` is provided, a new mono `array` is created. The phase of consequently generated chunks is aligned.
 
 ```js
-// simple sine oscillator
-let sine = createOscillator({type: 'sine', frequency: 1000})
-let arr = sine()
+let oscillate = require('audio-oscillator')
 
-// triangular oscillator with plain array output
-let tri = createOscillator({type: 'triangle', ratio: 0.2, frequency: 200})
-let arr2 = tri()
+let samples = new Float64Array(1024)
 
-// stereo oscillations
-let rect = createOscillator({type: 'rect', format: 'stereo audiobuffer', frequency: 1000})
-let abuf = rect()
+oscillate.sine(samples, 440)
 
-// custom harmonics oscillations to uint8 output
-let timbre = createOscillator({type: 'series', real: [0, 1, 0, .5], format: 'uint8'})
-let uint8arr = timbre()
+// output array has additional properties of the data
+// samples.phase, samples.frequency, samples.detune, samples.sampleRate
 
-// oscillator with dynamic params
-let seq = createOscillator({
-  type: 'step',
-  samples: [0,0,.5,1,1,.5],
-  frequency: 1000,
-  detune: (t, ctx) => t*0.01
-})
-let abuf4 = seq()
+// next data phase is aligned with the previous data
+oscillate.sine(samples)
 ```
 
 #### `options`
 
 Property | Default | Meaning
 ---|---|---
-`type` | `'sine'` | [Periodic waveform](https://github.com/scijs/periodic-waveform) name or K-rate function with `ctx => val` signature.
-`frequency`, `freq`, `f` | `440` | Frequency of oscillations, in Hertz. Can be A-rate function with `ctx => freq` signature.
-`detune` | `0` | Detune of oscillations `-100...+100`, in cents. Can be A-rate function with `ctx => detune` signature.
-`format` | `'float32 mono'` | Output data format, eg. `'planar stereo array'`, `'5.1 audiobuffer 44100'` or an object with format properties. See [audio-format](https://github.com/audiojs/audio-format).
+`frequency`, `f` | `440` | Frequency of oscillations, in Hz.
+`detune` | `0` | Detune of oscillations `-100...+100`, in cents.
+`phase` | `0` | Normalized initial phase of waveform, `0..1`.
+`sampleRate`, `rate` | `44100` | Sample rate of output data.
 
-#### `options.type`
 
-Some periodic functions may provide additional parameters, which can be passed to `options`. Every parameter can also be an A-rate function with `(time, ctx) => value` signature.
+#### `waveform`
 
-| Type | Waveshape | Meaning | Parameters |
-|---|:---:|---|---|
-| `'sine'`, `'sin'` | ![sine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sine.png) | Sine wave. | `phase=0` |
-| `'cosine'`, `'cos'` | ![cosine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/cosine.png) | Cosine wave, same as `sine` with `phase=0.25`. | `phase=0` |
-| `'saw'`, `'sawtooth'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sawtooth.png) | Sawtooth wave. | `inversed=false` |
-| `'tri'`, `'triangle'` | ![triangle](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/triangle.png) | Triangular wave. | `ratio=0.5` |
-| `'rect'`, `'rectangle'`, `'quad'`, `'square'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/square.png) | Rectangular wave. | `ratio=0.5` |
-| `'delta'`, `'pulse'` | ![pulse](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/pulse.png) | 1-sample pulse. | |
-| `'series'`, `'fourier'`, `'harmonics'`, `'periodic'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/fourier.png) | Fourier series, see [PeriodicWave](https://developer.mozilla.org/en-US/docs/Web/API/PeriodicWave). | `real=[0, 1]`, `imag=[0, 0]` and `normalize=true`. |
-| `'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/clausen.png) | Clausen function. | `limit=10` |
-| `'step'` | ![step](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/step.png) | Step function on a sample set. | `samples=[...]` |
-| `'interpolate'` | ![interpolate](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/interpolate.png) | Interpolate function on a sample set. | `samples=[...]` |
-| `'noise'` | ![noise](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/noise.png) | Repeated noise fragment. |  |
-| `function` | ? | Custom generating function with `ctx => value` signature, called for every sample. | |
+Available waveforms with their additional options:
 
-#### A-rate params
-
-If parameters are functions, they are evaluated every `oscillate` call with `ctx` argument and expected to return a plain value. `ctx` is an object with the following properties:
-
-| Property | Meaning |
-|---|---|
-| `count` | Current frame offset in samples. |
-| `time` | Current frame start time. |
-| `t` | Current amount of turn, `0..1`. |
-| `frequency` | Last frame frequency. |
-| `detune` | Last frame detune. |
-| `type` | Current type of generator. |
-| `...params` | Custom params for generator function. |
-
-### `oscillate(target|length=1024, options?)`
-
-Fill passed audio-buffer/array or create a new one of the `length` with oscillated wave. Optionally provide `options` object with `{frequency, detune, ...params}` properties.
-
-```js
-// Output float32 interleaved arrays
-let sine = createOscillator({
-  type: 'sine',
-  format: 'float32 interleaved',
-  channels: 4,
-  sampleRate: 96000
-})
-let samples = sine(1024) //samples.length == 8192
-
-// Change params dynamically
-let tri = createOscillator({
-  type: 'triangle',
-  frequency: 1000,
-  sampleRate: 8000,
-  format: 'uint8'
-})
-let arr = new Uint8Array(1024)
-tri(arr, {ratio: .3})
-tri(arr, {ratio: .4})
-tri(arr, {ratio: .5})
-```
+Type | Waveshape | Parameters
+---|---|---
+`'sin'` | ![sine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sine.png) |
+`'cos'` | ![cosine](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/cosine.png) |
+`'saw'` | ![sawtooth](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/sawtooth.png) | `inverse=false`
+`'tri'` | ![triangle](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/triangle.png) | `ratio=0.5`
+`'rect'` | ![square](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/square.png) | `ratio=0.5`
+`'series'` | ![fourier](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/fourier.png) | `real=[0, 1]`, `imag=[0, 0]`, `normalize=true`
+`'clausen'` | ![clausen](https://raw.githubusercontent.com/dfcreative/periodic-function/master/img/clausen.png) | `limit=10`
 
 
 ## Related
 
-* [audio-generator](https://github.com/audiojs/audio-generator) − generate audio with a function.
-* [audio-speaker](https://github.com/audiojs/audio-speaker) − output audio to speaker in node/browser.
-* [web-audio-write](https://github.com/audiojs/web-audio-write) − write to web-audio node.
 * [periodic-function](https://github.com/scijs/periodic-function) − a collection of periodic functions.
-* [audio-formant](https://github.com/audiojs/audio-formant) − generate gaussian mixture based audio waveform.
 
 ## License
 
