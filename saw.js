@@ -6,7 +6,7 @@ var osc = require('./fn')
 
 // fill passed source with oscillated data
 module.exports = function oscillate (dst, o) {
-	var i = dst.inverse || o.inverse || o.inversed || false
+	var i = dst.inverse || o.inverse || o.inversed || o.invert || o.inverted || false
 
 	dst = osc(dst, saw, o, i)
 
