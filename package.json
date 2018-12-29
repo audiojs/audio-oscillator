@@ -1,6 +1,6 @@
 {
   "name": "audio-oscillator",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Oscillate periodic wave to array",
   "main": "index.js",
   "dependencies": {
