@@ -107,6 +107,8 @@ t('Saw', function (t) {
 	t.deepEqual(to(arr, 'float32'), [-1, -.5, 0, .5])
 	t.equal(arr, arr2)
 
+	saw(4)
+
 	t.end()
 });
 
