@@ -9,7 +9,7 @@
   "devDependencies": {
     "audio-buffer-from": "^1.1.1",
     "audio-context": "^1.0.1",
-    "gl-waveform": "^2.4.3",
+    "gl-waveform": "^4.3.1",
     "pcm-convert": "^1.6.5",
     "settings-panel": "^1.8.17",
     "tape": "^4.9.1",
