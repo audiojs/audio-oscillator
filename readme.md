@@ -11,10 +11,9 @@ const oscillate = require('audio-oscillator/sine')
 const output = require('web-audio-write')()
 
 // render sine sound stream
+let buf = new AudioBuffer({ channels: 2, sampleRate: 44100, length: 1024 })
 ;(async function frame() {
-  await output(oscillate(new AudioBuffer({
-    channels: 2, sampleRate: 44100, length: 1024
-  }), 440))
+  await output(oscillate(buf, { frequency: 440 })))
   frame()
 })()
 ```
@@ -22,7 +21,7 @@ const output = require('web-audio-write')()
 
 ## API
 
-### `let array = oscillate.<waveform>(length=1024|dst, frequency=440|options?)`
+### `let array = oscillate.<waveform>(length|dst, frequency=440|options?)`
 
 Generate [periodic-function](https://ghub.io/periodic-function) `waveform` samples into a `dst` float array / array of arrays / _AudioBuffer_. If `length` is provided, a new mono `array` is created. The phase of consequently generated chunks is aligned, if the same array is passed multiple times.
 
