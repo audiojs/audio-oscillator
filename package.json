@@ -13,7 +13,7 @@
     "pcm-convert": "^1.6.5",
     "settings-panel": "^1.8.17",
     "tape": "^4.9.1",
-    "web-audio-write": "^1.2.1"
+    "web-audio-write": "^2.0.1"
   },
   "scripts": {
     "test": "node test.js"
