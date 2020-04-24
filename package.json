@@ -12,7 +12,7 @@
     "gl-waveform": "^2.4.3",
     "pcm-convert": "^1.6.5",
     "settings-panel": "^1.8.17",
-    "tape": "^4.9.1",
+    "tape": "^5.0.0",
     "web-audio-write": "^1.2.1"
   },
   "scripts": {
